@@ -1,0 +1,101 @@
+package com.bubua12.atlas.gateway.filter;
+
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+/**
+ * Global authentication filter for gateway.
+ * Checks Authorization header and forwards user info to downstream services.
+ */
+@Component
+public class AuthFilter implements GlobalFilter, Ordered {
+
+    /**
+     * 白名单 不需要认证
+     */
+    private static final List<String> WHITELIST = List.of(
+            "/auth/login",
+            "/auth/captcha",
+            "/auth/register"
+    );
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        ServerHttpRequest request = exchange.getRequest();
+        String path = request.getURI().getPath();
+
+        // 白名单跳过校验
+        if (isWhitelisted(path)) {
+            return chain.filter(exchange);
+        }
+
+        // Check for Authorization header
+        String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (token == null || token.isBlank()) {
+            return unauthorizedResponse(exchange.getResponse());
+        }
+
+        // Token exists — extract user info and pass downstream as headers.
+        // In a real implementation, the token would be parsed/validated here.
+        // For now we forward the raw token and placeholder user info.
+        ServerHttpRequest mutatedRequest = request.mutate()
+                .header("X-User-Id", getUserId(token))
+                .header("X-User-Name", getUserName(token))
+                .build();
+
+        return chain.filter(exchange.mutate().request(mutatedRequest).build());
+    }
+
+    @Override
+    public int getOrder() {
+        return -100;
+    }
+
+    /**
+     * Check whether the request path is in the whitelist.
+     */
+    private boolean isWhitelisted(String path) {
+        return WHITELIST.stream().anyMatch(path::startsWith);
+    }
+
+    /**
+     * Write a 401 JSON response.
+     */
+    private Mono<Void> unauthorizedResponse(ServerHttpResponse response) {
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        String body = "{\"code\":401,\"msg\":\"Unauthorized, token is missing or invalid\"}";
+        DataBuffer buffer = response.bufferFactory()
+                .wrap(body.getBytes(StandardCharsets.UTF_8));
+        return response.writeWith(Mono.just(buffer));
+    }
+
+    /**
+     * Extract userId from token. Placeholder — replace with real JWT parsing.
+     */
+    private String getUserId(String token) {
+        // TODO: parse JWT and extract userId claim
+        return "0";
+    }
+
+    /**
+     * Extract username from token. Placeholder — replace with real JWT parsing.
+     */
+    private String getUserName(String token) {
+        // TODO: parse JWT and extract username claim
+        return "anonymous";
+    }
+}
