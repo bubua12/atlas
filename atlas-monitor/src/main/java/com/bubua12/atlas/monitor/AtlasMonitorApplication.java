@@ -5,7 +5,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@SpringBootApplication
+/**
+ * 监控服务启动类
+ */
+@SpringBootApplication(scanBasePackages = "com.bubua12.atlas")
 @EnableDiscoveryClient
 @EnableAdminServer
 public class AtlasMonitorApplication {

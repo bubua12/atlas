@@ -5,6 +5,11 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 
+/**
+ * 通用返回增强
+ *
+ * @param <T> 泛型
+ */
 @Data
 public class CommonResult<T> implements Serializable {
 
@@ -15,6 +20,11 @@ public class CommonResult<T> implements Serializable {
     private String msg;
     private T data;
 
+    /**
+     * fixme 链路追踪
+     */
+    private String traceId;
+
     private CommonResult() {
     }
 
@@ -24,11 +34,11 @@ public class CommonResult<T> implements Serializable {
         this.data = data;
     }
 
-    public static <T> CommonResult<T> ok() {
+    public static <T> CommonResult<T> success() {
         return new CommonResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), null);
     }
 
-    public static <T> CommonResult<T> ok(T data) {
+    public static <T> CommonResult<T> success(T data) {
         return new CommonResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), data);
     }
 

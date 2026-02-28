@@ -13,6 +13,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+/**
+ * Redis 配置类
+ * 自定义 RedisTemplate 序列化方式：key 使用 String，value 使用 JSON。
+ */
 @Configuration
 public class RedisConfig {
 

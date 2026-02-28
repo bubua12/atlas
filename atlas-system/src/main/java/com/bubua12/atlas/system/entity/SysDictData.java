@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 字典数据实体
+ */
 @Data
 @TableName("sys_dict_data")
 public class SysDictData {

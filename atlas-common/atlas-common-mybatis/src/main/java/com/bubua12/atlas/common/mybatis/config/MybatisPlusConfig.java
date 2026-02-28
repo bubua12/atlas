@@ -6,6 +6,10 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * MyBatis-Plus 配置类
+ * 注册分页插件，支持 MySQL 分页查询。
+ */
 @Configuration
 public class MybatisPlusConfig {
 

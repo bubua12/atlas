@@ -1,63 +1,77 @@
 package com.bubua12.atlas.system.controller;
 
 import com.bubua12.atlas.common.core.result.CommonResult;
+import com.bubua12.atlas.system.entity.SysDictData;
+import com.bubua12.atlas.system.entity.SysDictType;
+import com.bubua12.atlas.system.service.SysDictService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+/**
+ * 字典管理控制器（字典类型 + 字典数据）
+ */
 @RestController
 @RequestMapping("/dict")
+@RequiredArgsConstructor
 public class SysDictController {
 
-    // ===== Dict Type =====
+    private final SysDictService sysDictService;
 
     @GetMapping("/type")
-    public CommonResult<?> listTypes() {
-        return CommonResult.ok();
+    public CommonResult<List<SysDictType>> listTypes() {
+        return CommonResult.success(sysDictService.listTypes());
     }
 
     @GetMapping("/type/{dictId}")
-    public CommonResult<?> getTypeById(@PathVariable Long dictId) {
-        return CommonResult.ok();
+    public CommonResult<SysDictType> getTypeById(@PathVariable Long dictId) {
+        return CommonResult.success(sysDictService.getTypeById(dictId));
     }
 
     @PostMapping("/type")
-    public CommonResult<Void> createType() {
-        return CommonResult.ok();
+    public CommonResult<Void> createType(@RequestBody SysDictType dictType) {
+        sysDictService.createType(dictType);
+        return CommonResult.success();
     }
 
     @PutMapping("/type")
-    public CommonResult<Void> updateType() {
-        return CommonResult.ok();
+    public CommonResult<Void> updateType(@RequestBody SysDictType dictType) {
+        sysDictService.updateType(dictType);
+        return CommonResult.success();
     }
 
     @DeleteMapping("/type/{dictId}")
     public CommonResult<Void> deleteType(@PathVariable Long dictId) {
-        return CommonResult.ok();
+        sysDictService.deleteType(dictId);
+        return CommonResult.success();
     }
 
-    // ===== Dict Data =====
-
-    @GetMapping("/data")
-    public CommonResult<?> listData() {
-        return CommonResult.ok();
+    @GetMapping("/data/{dictType}")
+    public CommonResult<List<SysDictData>> listData(@PathVariable String dictType) {
+        return CommonResult.success(sysDictService.listDataByType(dictType));
     }
 
-    @GetMapping("/data/{dictCode}")
-    public CommonResult<?> getDataById(@PathVariable Long dictCode) {
-        return CommonResult.ok();
+    @GetMapping("/data/code/{dictCode}")
+    public CommonResult<SysDictData> getDataByCode(@PathVariable Long dictCode) {
+        return CommonResult.success(sysDictService.getDataByCode(dictCode));
     }
 
     @PostMapping("/data")
-    public CommonResult<Void> createData() {
-        return CommonResult.ok();
+    public CommonResult<Void> createData(@RequestBody SysDictData dictData) {
+        sysDictService.createData(dictData);
+        return CommonResult.success();
     }
 
     @PutMapping("/data")
-    public CommonResult<Void> updateData() {
-        return CommonResult.ok();
+    public CommonResult<Void> updateData(@RequestBody SysDictData dictData) {
+        sysDictService.updateData(dictData);
+        return CommonResult.success();
     }
 
     @DeleteMapping("/data/{dictCode}")
     public CommonResult<Void> deleteData(@PathVariable Long dictCode) {
-        return CommonResult.ok();
+        sysDictService.deleteData(dictCode);
+        return CommonResult.success();
     }
 }

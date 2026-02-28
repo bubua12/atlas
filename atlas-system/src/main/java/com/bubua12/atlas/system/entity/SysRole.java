@@ -7,6 +7,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 角色
+ */
 @Data
 @TableName("sys_role")
 public class SysRole {

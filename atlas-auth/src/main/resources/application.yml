@@ -6,15 +6,20 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.31.138:8848
+        server-addr: 10.0.8.138:8848
         username: nacos
         password: nacos
   data:
     redis:
-      host: 192.168.31.138
+      host: 10.0.8.138
       port: 6379
       password: bubua12
 atlas:
   jwt:
     secret: atlas-jwt-secret-key-please-change-in-production-at-least-256-bits
     expiration: 7200
+  wecom:
+    corp-id: ww0abbbd110a1aa774
+    agent-id: 1000002
+    secret: hjf3RLF_tsS31OQzvd8AA-XRWJF1xylCIlZw4kIyojM
+    redirect-uri: https://atlas.bubua12.com/login

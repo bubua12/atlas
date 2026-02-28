@@ -3,6 +3,11 @@ package com.bubua12.atlas.common.security.context;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 安全上下文持有者
+ * 基于 ThreadLocal 存储当前请求的用户信息（userId、username、token），
+ * 供业务层获取当前登录用户。
+ */
 public class SecurityContextHolder {
 
     private static final ThreadLocal<Map<String, Object>> CONTEXT = ThreadLocal.withInitial(HashMap::new);

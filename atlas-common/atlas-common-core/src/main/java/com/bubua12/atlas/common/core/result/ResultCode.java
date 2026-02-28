@@ -3,6 +3,9 @@ package com.bubua12.atlas.common.core.result;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * 通用响应状态码枚举
+ */
 @Getter
 @AllArgsConstructor
 public enum ResultCode {

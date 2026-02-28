@@ -9,6 +9,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
+/**
+ * 操作日志切面
+ * 拦截 @OperLog 注解标注的方法，记录操作标题、耗时和异常信息。
+ */
 @Slf4j
 @Aspect
 @Component

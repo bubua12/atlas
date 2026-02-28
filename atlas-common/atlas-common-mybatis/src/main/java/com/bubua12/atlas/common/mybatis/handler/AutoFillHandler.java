@@ -7,6 +7,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+/**
+ * MyBatis-Plus 自动填充处理器
+ * 新增时自动填充 createTime、updateTime，更新时自动填充 updateTime。
+ */
 @Slf4j
 @Component
 public class AutoFillHandler implements MetaObjectHandler {

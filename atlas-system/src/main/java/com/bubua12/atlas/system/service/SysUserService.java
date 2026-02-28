@@ -1,9 +1,12 @@
 package com.bubua12.atlas.system.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.system.entity.SysUser;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 
+/**
+ * 用户管理服务接口
+ */
 public interface SysUserService {
 
     IPage<SysUser> list(PageQuery query);
@@ -17,4 +20,6 @@ public interface SysUserService {
     void update(SysUser user);
 
     void delete(Long userId);
+
+    SysUser getByPhone(String phone);
 }

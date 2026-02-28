@@ -7,16 +7,36 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- *
+ * atlas-system 用户服务 Feign 客户端
+ * 提供用户信息的远程查询能力，供各登录处理器调用。
  *
  * @author bubua12
  * @since 2026/02/27 22:20
  */
 @FeignClient(value = "atlas-system", path = "/user")
 public interface AtlasSystemFeign {
+
+    /**
+     * 根据用户名查询用户信息（密码登录使用）
+     */
     @GetMapping("/info/{username}")
     CommonResult<UserDTO> getUserByUsername(@PathVariable(value = "username") String username);
 
+    /**
+     * 根据用户ID查询用户信息
+     */
     @GetMapping("/{userId}")
     CommonResult<UserDTO> getUserById(@PathVariable("userId") Long userId);
+
+    /**
+     * 根据手机号查询用户信息（验证码登录使用）
+     */
+    @GetMapping("/phone/{phone}")
+    CommonResult<UserDTO> getUserByPhone(@PathVariable("phone") String phone);
+
+    /**
+     * 根据微信 openId 查询用户信息（微信登录使用）
+     */
+    @GetMapping("/openid/{openId}")
+    CommonResult<UserDTO> getUserByOpenId(@PathVariable("openId") String openId);
 }

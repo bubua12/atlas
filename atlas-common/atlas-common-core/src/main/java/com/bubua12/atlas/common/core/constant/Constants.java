@@ -1,5 +1,8 @@
 package com.bubua12.atlas.common.core.constant;
 
+/**
+ * 通用常量
+ */
 public final class Constants {
 
     private Constants() {

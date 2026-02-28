@@ -1,15 +1,18 @@
 package com.bubua12.atlas.system.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.system.entity.SysUser;
 import com.bubua12.atlas.system.mapper.SysUserMapper;
 import com.bubua12.atlas.system.service.SysUserService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 用户管理服务实现
+ */
 @Service
 @RequiredArgsConstructor
 public class SysUserServiceImpl implements SysUserService {
@@ -47,5 +50,12 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public void delete(Long userId) {
         sysUserMapper.deleteById(userId);
+    }
+
+    @Override
+    public SysUser getByPhone(String phone) {
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysUser::getPhone, phone);
+        return sysUserMapper.selectOne(wrapper);
     }
 }

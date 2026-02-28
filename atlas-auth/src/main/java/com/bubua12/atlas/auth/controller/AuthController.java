@@ -1,17 +1,20 @@
 package com.bubua12.atlas.auth.controller;
 
-import com.bubua12.atlas.auth.form.LoginBody;
+import com.bubua12.atlas.auth.form.LoginRequest;
 import com.bubua12.atlas.auth.service.AuthService;
 import com.bubua12.atlas.auth.vo.LoginVO;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import jakarta.annotation.Resource;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
+/**
+ * 认证控制器
+ * 提供统一登录、登出、刷新令牌接口。
+ * 登录时通过 grantType 字段路由到对应的登录处理器。
+ */
 @RestController
 @RequestMapping("/")
 public class AuthController {
@@ -19,21 +22,51 @@ public class AuthController {
     @Resource
     private AuthService authService;
 
+    @Value("${atlas.wecom.corp-id:}")
+    private String corpId;
+
+    @Value("${atlas.wecom.agent-id:}")
+    private String agentId;
+
+    @Value("${atlas.wecom.redirect-uri:}")
+    private String redirectUri;
+
+    /**
+     * 统一登录入口，根据 grantType 分发到不同登录方式
+     */
     @PostMapping("/login")
-    public CommonResult<LoginVO> login(@Valid @RequestBody LoginBody loginBody) {
-        LoginVO loginVO = authService.login(loginBody);
-        return CommonResult.ok(loginVO);
+    public CommonResult<LoginVO> login(@RequestBody LoginRequest loginRequest) {
+        LoginVO loginVO = authService.login(loginRequest);
+        return CommonResult.success(loginVO);
     }
 
+    /**
+     * 登出，清除 Redis 中的登录状态
+     */
     @PostMapping("/logout")
     public CommonResult<Void> logout(@RequestHeader("Authorization") String token) {
         authService.logout(token);
-        return CommonResult.ok();
+        return CommonResult.success();
     }
 
+    /**
+     * 刷新令牌，生成新 token 并续期
+     */
     @PostMapping("/refresh")
     public CommonResult<LoginVO> refresh(@RequestHeader("Authorization") String token) {
         LoginVO loginVO = authService.refreshToken(token);
-        return CommonResult.ok(loginVO);
+        return CommonResult.success(loginVO);
+    }
+
+    /**
+     * 获取企业微信扫码登录参数（corpId、agentId、redirectUri）
+     */
+    @GetMapping("/wecom/config")
+    public CommonResult<Map<String, String>> wecomConfig() {
+        return CommonResult.success(Map.of(
+                "corpId", corpId,
+                "agentId", agentId,
+                "redirectUri", redirectUri
+        ));
     }
 }

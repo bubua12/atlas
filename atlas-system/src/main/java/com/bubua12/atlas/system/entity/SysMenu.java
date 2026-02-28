@@ -1,11 +1,16 @@
 package com.bubua12.atlas.system.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+/**
+ * 菜单管理
+ */
 @Data
 @TableName("sys_menu")
 public class SysMenu {
@@ -85,4 +90,7 @@ public class SysMenu {
      * 更新时间
      */
     private LocalDateTime updateTime;
+
+    @TableField(exist = false)
+    private List<SysMenu> children;
 }

@@ -6,9 +6,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
- * fixme 引入了通用组件，自动引入配置
+ * 认证服务启动类
  */
-@SpringBootApplication(scanBasePackages = {"com.bubua12.atlas.auth", "com.bubua12.atlas.common.redis"})
+@SpringBootApplication(scanBasePackages = "com.bubua12.atlas")
 @EnableFeignClients
 @EnableDiscoveryClient
 public class AtlasAuthApplication {

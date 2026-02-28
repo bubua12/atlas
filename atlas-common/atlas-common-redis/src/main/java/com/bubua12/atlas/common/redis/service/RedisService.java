@@ -6,6 +6,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Redis 操作服务
+ * 封装 RedisTemplate 常用操作，提供简洁的缓存读写接口。
+ */
 @Component
 @RequiredArgsConstructor
 public class RedisService {
