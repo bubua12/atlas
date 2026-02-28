@@ -10,13 +10,18 @@ public class BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /** 主键ID */
     private Long id;
 
+    /** 创建者 */
     private String createBy;
 
+    /** 创建时间 */
     private LocalDateTime createTime;
 
+    /** 更新者 */
     private String updateBy;
 
+    /** 更新时间 */
     private LocalDateTime updateTime;
 }
