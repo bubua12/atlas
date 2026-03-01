@@ -20,6 +20,8 @@ public interface SysUserService {
     void update(SysUser user);
 
     void delete(Long userId);
+    
+    SysUser getByOpenId(String openId);
 
     SysUser getByPhone(String phone);
 }

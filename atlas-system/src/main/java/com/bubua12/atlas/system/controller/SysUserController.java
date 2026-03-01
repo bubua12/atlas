@@ -73,6 +73,21 @@ public class SysUserController {
         if (user == null) {
             return CommonResult.fail("User not found");
         }
+        UserDTO dto = convertToUserDTO(user);
+        return CommonResult.success(dto);
+    }
+
+    @GetMapping("/openid/{openId}")
+    public CommonResult<UserDTO> getUserByOpenId(@PathVariable("openId") String openId) {
+        SysUser user = sysUserService.getByOpenId(openId);
+        if (user == null) {
+            return CommonResult.fail("User not found");
+        }
+        UserDTO dto = convertToUserDTO(user);
+        return CommonResult.success(dto);
+    }
+    
+    private UserDTO convertToUserDTO(SysUser user) {
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());
         dto.setUsername(user.getUsername());
@@ -82,6 +97,6 @@ public class SysUserController {
         dto.setPhone(user.getPhone());
         dto.setStatus(user.getStatus());
         dto.setDeptId(user.getDeptId());
-        return CommonResult.success(dto);
+        return dto;
     }
 }

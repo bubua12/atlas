@@ -51,6 +51,13 @@ public class SysUserServiceImpl implements SysUserService {
     public void delete(Long userId) {
         sysUserMapper.deleteById(userId);
     }
+    
+    @Override
+    public SysUser getByOpenId(String openId) {
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysUser::getOpenId, openId);
+        return sysUserMapper.selectOne(wrapper);
+    }
 
     @Override
     public SysUser getByPhone(String phone) {

@@ -39,6 +39,7 @@ DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user`
 (
     `user_id`     BIGINT       NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+    `open_id`     VARCHAR(64)           DEFAULT NULL COMMENT '微信OpenID',
     `username`    VARCHAR(64)  NOT NULL COMMENT '用户账号',
     `nickname`    VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '用户昵称',
     `password`    VARCHAR(128) NOT NULL DEFAULT '' COMMENT '密码（BCrypt加密）',

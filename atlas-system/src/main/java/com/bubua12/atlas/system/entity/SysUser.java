@@ -31,6 +31,11 @@ public class SysUser {
     private String nickname;
 
     /**
+     * 微信OpenID
+     */
+    private String openId;
+
+    /**
      * 密码 BCrypt加密
      */
     private String password;
