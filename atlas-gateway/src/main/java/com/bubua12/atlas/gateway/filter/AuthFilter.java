@@ -29,7 +29,8 @@ public class AuthFilter implements GlobalFilter, Ordered {
     private static final List<String> WHITELIST = List.of(
             "/auth/login",
             "/auth/captcha",
-            "/auth/register"
+            "/auth/register",
+            "/auth/wecom/config"
     );
 
     @Override
