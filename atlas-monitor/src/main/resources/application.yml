@@ -6,14 +6,14 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 10.0.8.138:8848
-        username: nacos
-        password: nacos
+        server-addr: ${ATLAS_NACOS_HOST:127.0.0.1}
+        username: ${ATLAS_NACOS_USERNAME:nacos}
+        password: ${ATLAS_NACOS_PASSWORD:nacos}
   data:
     redis:
-      host: 10.0.8.138
-      port: 6379
-      password: bubua12
+      host: ${ATLAS_REDIS_HOST:127.0.0.1}
+      port: ${ATLAS_REDIS_PORT:6379}
+      password: ${ATLAS_REDIS_PASSWORD:bubua12}
   boot:
     admin:
       context-path: /admin

@@ -6,9 +6,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 10.0.8.138:8848
-        username: nacos
-        password: nacos
+        server-addr: ${ATLAS_NACOS_HOST:127.0.0.1}
+        username: ${ATLAS_NACOS_USERNAME:nacos}
+        password: ${ATLAS_NACOS_PASSWORD:nacos}
     gateway:
       routes:
         - id: atlas-auth
