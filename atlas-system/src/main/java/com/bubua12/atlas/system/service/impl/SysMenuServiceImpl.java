@@ -22,6 +22,21 @@ public class SysMenuServiceImpl implements SysMenuService {
     private final SysMenuMapper sysMenuMapper;
 
     @Override
+    public List<String> getPermsByUserId(Long userId) {
+        // 管理员拥有所有权限
+        if (Long.valueOf(1L).equals(userId)) {
+            return sysMenuMapper.selectList(new LambdaQueryWrapper<SysMenu>()
+                            .eq(SysMenu::getStatus, 0)
+                            .isNotNull(SysMenu::getPerms)
+                            .ne(SysMenu::getPerms, ""))
+                    .stream()
+                    .map(SysMenu::getPerms)
+                    .collect(Collectors.toList());
+        }
+        return sysMenuMapper.selectPermsByUserId(userId);
+    }
+
+    @Override
     public List<SysMenu> listTree() {
         LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByAsc(SysMenu::getSort);

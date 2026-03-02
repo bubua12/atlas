@@ -9,6 +9,11 @@ import java.util.List;
  */
 public interface SysMenuService {
 
+    /**
+     * 根据用户ID查询权限列表
+     */
+    List<String> getPermsByUserId(Long userId);
+
     List<SysMenu> listTree();
 
     SysMenu getById(Long menuId);
