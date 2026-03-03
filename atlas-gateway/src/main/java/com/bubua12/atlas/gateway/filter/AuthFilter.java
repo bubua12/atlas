@@ -1,5 +1,6 @@
 package com.bubua12.atlas.gateway.filter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -20,6 +21,7 @@ import java.util.List;
  * Global authentication filter for gateway.
  * Checks Authorization header and forwards user info to downstream services.
  */
+@Slf4j
 @Component
 public class AuthFilter implements GlobalFilter, Ordered {
 
@@ -35,6 +37,8 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // fixme 规划化日志打印输出
+        log.info("执行了过滤器... ...");
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
@@ -52,6 +56,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
         // Token exists — extract user info and pass downstream as headers.
         // In a real implementation, the token would be parsed/validated here.
         // For now we forward the raw token and placeholder user info.
+        // todo 从token中提取用户信息通过请求头传递给下游  1、认证校验 2、解析
         ServerHttpRequest mutatedRequest = request.mutate()
                 .header("X-User-Id", getUserId(token))
                 .header("X-User-Name", getUserName(token))
@@ -86,6 +91,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
     /**
      * Extract userId from token. Placeholder — replace with real JWT parsing.
+     * fixme 这里传下去的还是临时值，需要从token中解析出来用户信息
      */
     private String getUserId(String token) {
         // TODO: parse JWT and extract userId claim
