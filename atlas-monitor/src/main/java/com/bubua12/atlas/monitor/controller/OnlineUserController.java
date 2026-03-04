@@ -1,9 +1,11 @@
 package com.bubua12.atlas.monitor.controller;
 
 import com.bubua12.atlas.common.core.result.CommonResult;
+import com.bubua12.atlas.monitor.service.OnlineUserService;
+import com.bubua12.atlas.monitor.vo.OnlineUserVO;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,14 +15,17 @@ import java.util.List;
 @RequestMapping("/online")
 public class OnlineUserController {
 
+    @Resource
+    private OnlineUserService onlineUserService;
+
     @GetMapping
-    public CommonResult<List<Object>> list() {
-        return CommonResult.success(new ArrayList<>());
+    public CommonResult<List<OnlineUserVO>> list() {
+        return CommonResult.success(onlineUserService.listOnlineUsers());
     }
 
-    @DeleteMapping("/{tokenId}")
-    public CommonResult<Void> kickOut(@PathVariable String tokenId) {
-        // TODO: Implement kicking user offline by invalidating token
+    @DeleteMapping("/{token}")
+    public CommonResult<Void> kickOut(@PathVariable String token) {
+        onlineUserService.kickOut(token);
         return CommonResult.success();
     }
 }
