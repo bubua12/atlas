@@ -15,7 +15,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 在线用户服务
@@ -27,9 +26,6 @@ public class OnlineUserService {
     private RedisService redisService;
 
     @Resource
-    private RedisTemplate<String, Object> redisTemplate;
-
-    @Resource
     private JwtUtils jwtUtils;
 
     private static final String TOKEN_CACHE_PREFIX = "auth:token:";
@@ -39,7 +35,7 @@ public class OnlineUserService {
      */
     public List<OnlineUserVO> listOnlineUsers() {
         List<OnlineUserVO> result = new ArrayList<>();
-        Set<String> keys = redisTemplate.keys(TOKEN_CACHE_PREFIX + "*");
+        Set<String> keys = redisService.keys(TOKEN_CACHE_PREFIX + "*");
 
         if (keys == null || keys.isEmpty()) {
             return result;

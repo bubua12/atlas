@@ -3,6 +3,11 @@ server:
 spring:
   application:
     name: atlas-gateway
+  data:
+    redis:
+      host: ${ATLAS_REDIS_HOST:127.0.0.1}
+      port: ${ATLAS_REDIS_PORT:6379}
+      password: ${ATLAS_REDIS_PASSWORD:bubua12}
   cloud:
     nacos:
       discovery:

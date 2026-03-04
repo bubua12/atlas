@@ -1,8 +1,10 @@
 package com.bubua12.atlas.common.security.utils;
 
+import com.bubua12.atlas.common.redis.service.RedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,9 @@ import java.util.Map;
 @Component
 public class JwtUtils {
 
+    @Resource
+    private RedisService redisService;
+
     /**
      * JWT 签名密钥
      */
@@ -33,6 +38,7 @@ public class JwtUtils {
 
     private static final String CLAIM_USER_ID = "user_id";
     private static final String CLAIM_USERNAME = "username";
+    private static final String TOKEN_CACHE_PREFIX = "auth:token:";
 
     /**
      * 获取 HMAC 签名密钥
@@ -96,5 +102,15 @@ public class JwtUtils {
         } catch (Exception e) {
             return true;
         }
+    }
+
+    /**
+     * 校验 token 是否有效（未过期且在 Redis 中存在）
+     */
+    public boolean isTokenValid(String token) {
+        if (isTokenExpired(token)) {
+            return false;
+        }
+        return Boolean.TRUE.equals(redisService.hasKey(TOKEN_CACHE_PREFIX + token));
     }
 }

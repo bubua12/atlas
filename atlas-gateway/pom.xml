@@ -25,12 +25,6 @@
         <dependency>
             <groupId>com.bubua12.atlas</groupId>
             <artifactId>atlas-common-security</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.bubua12.atlas</groupId>
-                    <artifactId>atlas-common-redis</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Spring Cloud Gateway (WebFlux-based) -->

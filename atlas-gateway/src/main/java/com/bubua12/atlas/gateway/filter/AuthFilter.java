@@ -58,14 +58,10 @@ public class AuthFilter implements GlobalFilter, Ordered {
             return unauthorizedResponse(exchange.getResponse());
         }
 
-        if (jwtUtils.isTokenExpired(token)) {
+        if (!jwtUtils.isTokenValid(token)) {
             return unauthorizedResponse(exchange.getResponse());
         }
 
-        // Token exists — extract user info and pass downstream as headers.
-        // In a real implementation, the token would be parsed/validated here.
-        // For now we forward the raw token and placeholder user info.
-        // todo 从token中提取用户信息通过请求头传递给下游  1、认证校验 2、解析
         ServerHttpRequest mutatedRequest = request.mutate()
                 .header("X-User-Id", getUserId(token))
                 .header("X-User-Name", getUserName(token))
@@ -103,13 +99,17 @@ public class AuthFilter implements GlobalFilter, Ordered {
      * 这里传下去的还是临时值，需要从token中解析出来用户信息
      */
     private String getUserId(String token) {
-        return jwtUtils.getUserId(token).toString();
+        String userId = jwtUtils.getUserId(token).toString();
+        log.info("当前登录用户ID: {}", userId);
+        return userId;
     }
 
     /**
      * Extract username from token. Placeholder — replace with real JWT parsing.
      */
     private String getUserName(String token) {
-        return jwtUtils.getUsername(token);
+        String username = jwtUtils.getUsername(token);
+        log.info("当前登录用户名称: {}", username);
+        return username;
     }
 }

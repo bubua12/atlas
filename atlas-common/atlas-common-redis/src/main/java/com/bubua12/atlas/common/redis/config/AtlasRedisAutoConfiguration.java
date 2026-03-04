@@ -1,6 +1,7 @@
 package com.bubua12.atlas.common.redis.config;
 
 import com.bubua12.atlas.common.redis.service.RedisService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,7 @@ public class AtlasRedisAutoConfiguration {
 
     @ConditionalOnMissingBean
     @Bean
-    public RedisService redisService(RedisTemplate<String, Object> redisTemplate) {
+    public RedisService redisService(@Qualifier("customRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
         return new RedisService(redisTemplate);
     }
 }
