@@ -15,9 +15,6 @@ spring:
       port: ${ATLAS_REDIS_PORT:6379}
       password: ${ATLAS_REDIS_PASSWORD:bubua12}
 atlas:
-  jwt:
-    secret: atlas-jwt-secret-key-please-change-in-production-at-least-256-bits
-    expiration: 7200
   wecom:
     corp-id: ww0abbbd110a1aa774
     agent-id: 1000002

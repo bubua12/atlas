@@ -1,0 +1,4 @@
+atlas:
+  jwt:
+    secret: atlas-jwt-secret-key-please-change-in-production-at-least-256-bits
+    expiration: 7200

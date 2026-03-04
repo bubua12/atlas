@@ -1,5 +1,7 @@
 package com.bubua12.atlas.gateway.filter;
 
+import com.bubua12.atlas.common.security.utils.JwtUtils;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -24,6 +26,9 @@ import java.util.List;
 @Slf4j
 @Component
 public class AuthFilter implements GlobalFilter, Ordered {
+
+    @Resource
+    private JwtUtils jwtUtils;
 
     /**
      * 白名单 不需要认证
@@ -50,6 +55,10 @@ public class AuthFilter implements GlobalFilter, Ordered {
         // Check for Authorization header
         String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (token == null || token.isBlank()) {
+            return unauthorizedResponse(exchange.getResponse());
+        }
+
+        if (jwtUtils.isTokenExpired(token)) {
             return unauthorizedResponse(exchange.getResponse());
         }
 
@@ -91,18 +100,16 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
     /**
      * Extract userId from token. Placeholder — replace with real JWT parsing.
-     * fixme 这里传下去的还是临时值，需要从token中解析出来用户信息
+     * 这里传下去的还是临时值，需要从token中解析出来用户信息
      */
     private String getUserId(String token) {
-        // TODO: parse JWT and extract userId claim
-        return "0";
+        return jwtUtils.getUserId(token).toString();
     }
 
     /**
      * Extract username from token. Placeholder — replace with real JWT parsing.
      */
     private String getUserName(String token) {
-        // TODO: parse JWT and extract username claim
-        return "anonymous";
+        return jwtUtils.getUsername(token);
     }
 }
