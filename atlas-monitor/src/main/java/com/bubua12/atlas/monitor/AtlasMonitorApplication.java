@@ -8,7 +8,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 /**
  * 监控服务启动类
  */
-@SpringBootApplication(scanBasePackages = "com.bubua12.atlas")
+@SpringBootApplication
 @EnableDiscoveryClient
 @EnableAdminServer
 public class AtlasMonitorApplication {

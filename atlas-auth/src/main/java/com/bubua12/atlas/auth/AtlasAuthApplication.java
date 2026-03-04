@@ -8,7 +8,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 /**
  * 认证服务启动类
  */
-@SpringBootApplication(scanBasePackages = "com.bubua12.atlas")
+@SpringBootApplication
 @EnableFeignClients
 @EnableDiscoveryClient
 public class AtlasAuthApplication {
