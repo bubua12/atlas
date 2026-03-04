@@ -50,7 +50,11 @@
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
 
-        <!-- Spring Boot Admin Server -->
+        <!-- Spring Boot Admin Server 监控页面 http://ip:port/admin
+         1、自动从 Nacos 发现所有注册的服务
+         2、每隔几秒（默认10秒）轮询这些服务的 actuator 端点
+         3、检查服务是否在线、健康状态、内存使用等
+         -->
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-server</artifactId>
