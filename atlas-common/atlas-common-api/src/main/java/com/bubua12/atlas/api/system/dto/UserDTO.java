@@ -30,10 +30,6 @@ public class UserDTO implements Serializable {
      */
     private String nickname;
     /**
-     * 密码（密文）
-     */
-    private String password;
-    /**
      * 邮箱
      */
     private String email;

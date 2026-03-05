@@ -129,12 +129,18 @@ public class SysUserController {
         return CommonResult.success(dto);
     }
 
+    @PostMapping("/verify-password")
+    public CommonResult<Boolean> verifyPassword(@RequestParam("username") String username,
+                                                 @RequestParam("password") String password) {
+        boolean valid = sysUserService.verifyPassword(username, password);
+        return CommonResult.success(valid);
+    }
+
     private UserDTO convertToUserDTO(SysUser user) {
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());
         dto.setUsername(user.getUsername());
         dto.setNickname(user.getNickname());
-        dto.setPassword(user.getPassword());
         dto.setEmail(user.getEmail());
         dto.setPhone(user.getPhone());
         dto.setStatus(user.getStatus());

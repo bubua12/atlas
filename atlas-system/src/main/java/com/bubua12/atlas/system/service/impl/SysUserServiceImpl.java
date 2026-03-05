@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bubua12.atlas.common.core.domain.PageQuery;
+import com.bubua12.atlas.common.core.utils.PasswordUtils;
 import com.bubua12.atlas.system.entity.SysUser;
 import com.bubua12.atlas.system.mapper.SysUserMapper;
 import com.bubua12.atlas.system.service.SysUserService;
@@ -39,11 +40,16 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public void create(SysUser user) {
+        // 加密密码
+        if (user.getPassword() != null) {
+            user.setPassword(PasswordUtils.encode(user.getPassword()));
+        }
         sysUserMapper.insert(user);
     }
 
     @Override
     public void update(SysUser user) {
+        user.setPassword(PasswordUtils.encode(user.getPassword()));
         sysUserMapper.updateById(user);
     }
 
@@ -51,7 +57,7 @@ public class SysUserServiceImpl implements SysUserService {
     public void delete(Long userId) {
         sysUserMapper.deleteById(userId);
     }
-    
+
     @Override
     public SysUser getByOpenId(String openId) {
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
@@ -64,5 +70,14 @@ public class SysUserServiceImpl implements SysUserService {
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysUser::getPhone, phone);
         return sysUserMapper.selectOne(wrapper);
+    }
+
+    @Override
+    public boolean verifyPassword(String username, String rawPassword) {
+        SysUser user = getByUsername(username);
+        if (user == null) {
+            return false;
+        }
+        return PasswordUtils.matches(rawPassword, user.getPassword());
     }
 }

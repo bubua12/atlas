@@ -9,6 +9,11 @@ spring:
         server-addr: ${ATLAS_NACOS_HOST:127.0.0.1}
         username: ${ATLAS_NACOS_USERNAME:nacos}
         password: ${ATLAS_NACOS_PASSWORD:nacos}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${ATLAS_MYSQL_URL:jdbc:mysql://127.0.0.1:3306/atlas}
+    username: ${ATLAS_MYSQL_USERNAME:root}
+    password: ${ATLAS_MYSQL_PASSWORD:bubua12}
   data:
     redis:
       host: ${ATLAS_REDIS_HOST:127.0.0.1}

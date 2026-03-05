@@ -5,6 +5,8 @@ import com.bubua12.atlas.common.core.result.CommonResult;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * atlas-system 用户服务 Feign 客户端
@@ -39,4 +41,11 @@ public interface AtlasSystemFeign {
      */
     @GetMapping("/openid/{openId}")
     CommonResult<UserDTO> getUserByOpenId(@PathVariable("openId") String openId);
+
+    /**
+     * 验证用户密码
+     */
+    @PostMapping("/verify-password")
+    CommonResult<Boolean> verifyPassword(@RequestParam("username") String username,
+                                         @RequestParam("password") String password);
 }

@@ -4,6 +4,7 @@ import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.auth.form.LoginRequest;
 import com.bubua12.atlas.auth.handler.LoginHandlerFactory;
 import com.bubua12.atlas.auth.service.AuthService;
+import com.bubua12.atlas.auth.service.LoginFailRecordService;
 import com.bubua12.atlas.auth.vo.LoginVO;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.model.LoginUser;
@@ -30,6 +31,8 @@ public class AuthServiceImpl implements AuthService {
     private RedisService redisService;
     @Resource
     private JwtUtils jwtUtils;
+    @Resource
+    private LoginFailRecordService loginFailRecordService;
 
     /**
      * JWT 过期时间（秒），从配置文件读取
@@ -44,30 +47,58 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 统一登录流程：
-     * 1. 根据 grantType 获取对应处理器完成认证
-     * 2. 生成 JWT 令牌
-     * 3. 构建登录用户信息缓存到 Redis
+     * 1. 检查 IP 和账号是否被锁定
+     * 2. 根据 grantType 获取对应处理器完成认证
+     * 3. 生成 JWT 令牌
+     * 4. 构建登录用户信息缓存到 Redis
+     * 5. 清除登录失败记录
      */
     @Override
     public LoginVO login(LoginRequest loginRequest) {
-        // 委托给对应的登录处理器完成认证
-        UserDTO user = loginHandlerFactory
-                .getHandler(loginRequest.getGrantType())
-                .authenticate(loginRequest);
+        String ip = loginRequest.getClientIp();
+        String username = loginRequest.getUsername();
 
-        String token = jwtUtils.generateToken(user.getUserId(), user.getUsername());
+        // 检查 IP 是否被锁定
+        if (ip != null && loginFailRecordService.isIpLocked(ip)) {
+            throw new RuntimeException("IP 已被锁定，请稍后再试");
+        }
 
-        LoginUser loginUser = new LoginUser();
-        loginUser.setUserId(user.getUserId());
-        loginUser.setUsername(user.getUsername());
-        loginUser.setToken(token);
-        loginUser.setPermissions(user.getPermissions());
-        redisService.set(TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
+        // 检查账号是否被锁定
+        if (username != null && loginFailRecordService.isAccountLocked(username)) {
+            throw new RuntimeException("账号已被锁定，请稍后再试");
+        }
 
-        LoginVO loginVO = new LoginVO();
-        loginVO.setToken(token);
-        loginVO.setExpiresIn(expiration);
-        return loginVO;
+        try {
+            // 委托给对应的登录处理器完成认证
+            UserDTO user = loginHandlerFactory
+                    .getHandler(loginRequest.getGrantType())
+                    .authenticate(loginRequest);
+
+            String token = jwtUtils.generateToken(user.getUserId(), user.getUsername());
+
+            LoginUser loginUser = new LoginUser();
+            loginUser.setUserId(user.getUserId());
+            loginUser.setUsername(user.getUsername());
+            loginUser.setToken(token);
+            loginUser.setPermissions(user.getPermissions());
+            redisService.set(TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
+
+            // 登录成功，清除失败记录
+            if (ip != null && username != null) {
+                loginFailRecordService.clearLoginFail(ip, username);
+            }
+
+            LoginVO loginVO = new LoginVO();
+            loginVO.setToken(token);
+            loginVO.setExpiresIn(expiration);
+            return loginVO;
+        } catch (Exception e) {
+            // 登录失败，记录失败次数
+            if (ip != null && username != null) {
+                loginFailRecordService.recordLoginFail(ip, username);
+            }
+            throw e;
+        }
     }
 
     /**

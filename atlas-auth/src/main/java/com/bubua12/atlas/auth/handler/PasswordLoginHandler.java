@@ -24,19 +24,28 @@ public class PasswordLoginHandler implements LoginHandler {
 
     /**
      * 密码登录认证流程：
-     * 1. 根据用户名远程查询用户信息
-     * 2. 校验密码是否匹配
+     * 1. 验证用户名和密码是否匹配
+     * 2. 查询用户信息
      */
     @Override
     public UserDTO authenticate(LoginRequest request) {
+        // 验证密码
+        CommonResult<Boolean> verifyResult = atlasSystemFeign.verifyPassword(
+                request.getUsername(),
+                request.getPassword()
+        );
+
+        // 从用户名错误以及密码错误调整为统一提示，防止用户名枚举破解
+        if (verifyResult == null || verifyResult.getData() == null || !verifyResult.getData()) {
+            throw new RuntimeException("用户名或密码错误");
+        }
+
+        // 密码验证通过，查询用户信息
         CommonResult<UserDTO> result = atlasSystemFeign.getUserByUsername(request.getUsername());
         if (result == null || result.getData() == null) {
-            throw new RuntimeException("用户不存在: " + request.getUsername());
+            throw new RuntimeException("用户名或密码错误");
         }
-        UserDTO user = result.getData();
-        if (request.getPassword() == null || !request.getPassword().equals(user.getPassword())) {
-            throw new RuntimeException("密码错误");
-        }
-        return user;
+
+        return result.getData();
     }
 }

@@ -24,4 +24,9 @@ public interface SysUserService {
     SysUser getByOpenId(String openId);
 
     SysUser getByPhone(String phone);
+
+    /**
+     * 验证用户密码
+     */
+    boolean verifyPassword(String username, String rawPassword);
 }
