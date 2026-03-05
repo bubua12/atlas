@@ -21,7 +21,7 @@
         <hutool.version>5.8.25</hutool.version>
         <jjwt.version>0.12.5</jjwt.version>
         <redisson.version>3.27.0</redisson.version>
-        <atlas.version>1.0.0</atlas.version>
+        <atlas.version>${project.version}</atlas.version>
         <knife4j.version>4.4.0</knife4j.version>
     </properties>
 

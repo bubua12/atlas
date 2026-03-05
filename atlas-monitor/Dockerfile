@@ -14,7 +14,7 @@ RUN mkdir -p /home/atlas
 WORKDIR /home/atlas
 
 # 复制 jar文件到路径
-COPY target/atlas-monitor-1.0.0.jar /home/atlas/app.jar
+COPY target/atlas-monitor-*.jar /home/atlas/app.jar
 
 EXPOSE 9400
 

@@ -14,7 +14,7 @@ RUN mkdir -p /home/atlas
 WORKDIR /home/atlas
 
 # 复制 jar文件到路径
-COPY target/atlas-auth-1.0.0.jar /home/atlas/app.jar
+COPY target/atlas-auth-*.jar /home/atlas/app.jar
 
 # 统一端口8080
 EXPOSE 9100
