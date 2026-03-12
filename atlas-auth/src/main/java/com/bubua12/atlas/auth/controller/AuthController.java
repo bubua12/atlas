@@ -4,6 +4,7 @@ import com.bubua12.atlas.auth.form.LoginRequest;
 import com.bubua12.atlas.auth.service.AuthService;
 import com.bubua12.atlas.auth.vo.LoginVO;
 import com.bubua12.atlas.common.core.result.CommonResult;
+import com.bubua12.atlas.common.log.annotation.OperLog;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,7 @@ public class AuthController {
      * 统一登录入口，根据 grantType 分发到不同登录方式
      */
     @PostMapping("/login")
+    @OperLog(title = "登录", businessType = "读取") // fixme 规范化配置
     public CommonResult<LoginVO> login(@RequestBody LoginRequest loginRequest) {
         LoginVO loginVO = authService.login(loginRequest);
         return CommonResult.success(loginVO);

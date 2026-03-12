@@ -1,6 +1,8 @@
 package com.bubua12.atlas.common.log.aspect;
 
 import com.bubua12.atlas.common.log.annotation.OperLog;
+import com.bubua12.atlas.common.log.service.AsyncOperLogService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -18,6 +20,10 @@ import java.util.Arrays;
 @Component
 public class OperLogAspect {
 
+    // 注入异步服务 防止自调用导致异步失效
+    @Resource
+    private AsyncOperLogService asyncOperLogService;
+
     @Around("@annotation(operLog)")
     public Object around(ProceedingJoinPoint point, OperLog operLog) throws Throwable {
         String methodName = point.getSignature().toShortString();
@@ -33,6 +39,9 @@ public class OperLogAspect {
             long elapsed = System.currentTimeMillis() - startTime;
             log.info("[OperLog] End - title: {}, method: {}, elapsed: {}ms",
                     title, methodName, elapsed);
+
+            // fixme 这里并没有实质性的入库之类的动作
+            asyncOperLogService.saveLog(title, methodName, elapsed);
             return result;
         } catch (Throwable e) {
             long elapsed = System.currentTimeMillis() - startTime;

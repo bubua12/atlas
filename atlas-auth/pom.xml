@@ -41,6 +41,12 @@
             <artifactId>atlas-common-mybatis</artifactId>
         </dependency>
 
+        <!-- 审计日志模块 -->
+        <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-log</artifactId>
+        </dependency>
+
         <!-- Spring Cloud Alibaba Nacos -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
