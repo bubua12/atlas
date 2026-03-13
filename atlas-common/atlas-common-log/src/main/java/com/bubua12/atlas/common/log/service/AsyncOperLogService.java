@@ -1,31 +1,31 @@
 package com.bubua12.atlas.common.log.service;
 
+import com.bubua12.atlas.common.log.entity.SysOperLog;
+import com.bubua12.atlas.common.log.mapper.SysOperLogMapper;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
- *
- *
- * @author bubua12
- * @since 2026/3/12 19:08
+ * 异步操作日志服务
  */
-
 @Service
 @Slf4j
 public class AsyncOperLogService {
 
-    // 指定使用自己配置的线程池 todo 这里专门业务专门线程池是不是更好
+    @Resource
+    private SysOperLogMapper operLogMapper;
+
     @Async("atlasLogTaskExecutor")
-    public void saveLog(String title, String method, long elapsed) {
-        // 模拟耗时操作，例如入库 fixme 后面去除，这里只是模拟
+    public void saveLog(SysOperLog operLog) {
         try {
-            Thread.sleep(100);
-            log.info("[Async-Thread: {}] 保存日志 - title: {}, 耗时: {}ms",
-                    Thread.currentThread().getName(), title, elapsed);
-        } catch (InterruptedException e) {
-            // fixme 更优雅的错误日志打印方法的抽取
-            e.printStackTrace();
+            operLogMapper.insert(operLog);
+            log.debug("[atlas-log-thread: {}] 保存操作日志成功 - title: {}, 耗时: {}ms",
+                    Thread.currentThread().getName(), operLog.getTitle(), operLog.getCostTime());
+        } catch (Exception e) {
+            log.debug("[atlas-log-thread: {}] 保存操作日志失败 - title: {}, error: {}",
+                    Thread.currentThread().getName(), operLog.getTitle(), e.getMessage(), e);
         }
     }
 }

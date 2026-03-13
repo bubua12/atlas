@@ -36,6 +36,12 @@
             <groupId>com.bubua12.atlas</groupId>
             <artifactId>atlas-common-mybatis</artifactId>
         </dependency>
+
+        <!-- atlas common web 获取请求信息和IP地址 -->
+        <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-web</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
