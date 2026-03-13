@@ -7,7 +7,7 @@ import com.bubua12.atlas.auth.service.AuthService;
 import com.bubua12.atlas.auth.service.LoginFailRecordService;
 import com.bubua12.atlas.auth.vo.LoginVO;
 import com.bubua12.atlas.common.redis.service.RedisService;
-import com.bubua12.atlas.common.security.model.LoginUser;
+import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;

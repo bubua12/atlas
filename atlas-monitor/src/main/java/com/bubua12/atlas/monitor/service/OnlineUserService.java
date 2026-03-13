@@ -1,7 +1,7 @@
 package com.bubua12.atlas.monitor.service;
 
 import com.bubua12.atlas.common.redis.service.RedisService;
-import com.bubua12.atlas.common.security.model.LoginUser;
+import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
 import com.bubua12.atlas.monitor.vo.OnlineUserVO;
 import io.jsonwebtoken.Claims;

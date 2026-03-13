@@ -1,4 +1,4 @@
-package com.bubua12.atlas.common.security.model;
+package com.bubua12.atlas.common.core.model;
 
 import lombok.Data;
 

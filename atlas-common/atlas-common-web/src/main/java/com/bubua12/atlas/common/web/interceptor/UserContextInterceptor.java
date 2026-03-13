@@ -1,6 +1,6 @@
 package com.bubua12.atlas.common.web.interceptor;
 
-import com.bubua12.atlas.common.security.context.SecurityContextHolder;
+import com.bubua12.atlas.common.core.context.SecurityContextHolder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
