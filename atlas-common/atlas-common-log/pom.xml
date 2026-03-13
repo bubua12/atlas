@@ -22,8 +22,19 @@
         </dependency>
 
         <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-concurrent</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- atlas common mybatis 操作日志持久入库 -->
+        <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-mybatis</artifactId>
         </dependency>
     </dependencies>
 

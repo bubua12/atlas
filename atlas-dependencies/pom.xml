@@ -144,6 +144,11 @@
                 <artifactId>atlas-common-api</artifactId>
                 <version>${atlas.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.bubua12.atlas</groupId>
+                <artifactId>atlas-common-concurrent</artifactId>
+                <version>${atlas.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

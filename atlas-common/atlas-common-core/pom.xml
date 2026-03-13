@@ -13,21 +13,16 @@
     <artifactId>atlas-common-core</artifactId>
 
     <name>atlas-common-core</name>
-    <description>Atlas Common Core - Base utilities and domain objects</description>
+    <description>Atlas核心模块，不依赖其他任何common模块</description>
 
     <dependencies>
-
-        <!-- boot starter -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
+        <!-- hutool工具包 -->
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
         </dependency>
 
+        <!-- lombok实体类通用方法注解 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

@@ -24,6 +24,7 @@
         <module>atlas-common-security</module>
         <module>atlas-common-log</module>
         <module>atlas-common-api</module>
+        <module>atlas-common-concurrent</module>
     </modules>
 
 </project>

@@ -1,4 +1,4 @@
-package com.bubua12.atlas.common.core.config;
+package com.bubua12.atlas.common.concurrent.config;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;
@@ -11,6 +11,6 @@ import org.springframework.context.annotation.Import;
  */
 @Import({AsyncConfig.class})
 @AutoConfiguration
-public class AtlasCoreAutoConfiguration {
+public class AtlasConcurrentAutoConfiguration {
 
 }
