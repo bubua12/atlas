@@ -10,18 +10,27 @@
     </parent>
 
     <artifactId>atlas-common-concurrent</artifactId>
+    <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <description>
+        atlas-common-concurrent 并发模块
+        1. 线程池自动配置
+        2. 线程池监控
+        3. 上下文传递（MDC、TTL）
+    </description>
 
     <dependencies>
-        <!-- boot starter -->
+        <!-- 核心依赖 -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-core</artifactId>
+        </dependency>
+
+        <!-- TransmittableThreadLocal: 解决线程池上下文传递问题 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>transmittable-thread-local</artifactId>
+            <version>2.14.5</version>
         </dependency>
     </dependencies>
 
