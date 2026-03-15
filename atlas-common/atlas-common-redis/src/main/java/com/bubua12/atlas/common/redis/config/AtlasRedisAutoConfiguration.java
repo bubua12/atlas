@@ -1,5 +1,6 @@
 package com.bubua12.atlas.common.redis.config;
 
+import com.bubua12.atlas.common.redis.aspect.RedisLimitAspect;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -12,7 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
  * Atlas Redis自动配置类
  */
 @AutoConfiguration
-@Import(RedisConfig.class)
+@Import({RedisConfig.class, RedisLimitAspect.class})
 public class AtlasRedisAutoConfiguration {
 
     @ConditionalOnMissingBean

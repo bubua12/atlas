@@ -13,7 +13,7 @@ public class IpUtils {
      * 获取客户端真实IP地址
      */
     public static String getIpAddr(HttpServletRequest request) {
-        if (request == null) {
+        if (null == request) {
             return "";
         }
 
