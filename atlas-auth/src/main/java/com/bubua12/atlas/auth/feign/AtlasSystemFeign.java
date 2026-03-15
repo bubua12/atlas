@@ -1,11 +1,13 @@
 package com.bubua12.atlas.auth.feign;
 
+import com.bubua12.atlas.api.system.dto.SysUserDTO;
 import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -48,4 +50,10 @@ public interface AtlasSystemFeign {
     @PostMapping("/verify-password")
     CommonResult<Boolean> verifyPassword(@RequestParam("username") String username,
                                          @RequestParam("password") String password);
+
+    /**
+     * OAuth2创建用户
+     */
+    @PostMapping("/oauth2/createUser")
+    CommonResult<Void> createUserOAuth2(@RequestBody SysUserDTO sysUserDTO);
 }

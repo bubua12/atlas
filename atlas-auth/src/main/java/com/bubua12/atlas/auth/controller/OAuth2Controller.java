@@ -1,5 +1,9 @@
 package com.bubua12.atlas.auth.controller;
 
+import com.bubua12.atlas.api.system.dto.SysUserDTO;
+import com.bubua12.atlas.auth.feign.AtlasSystemFeign;
+import com.bubua12.atlas.common.core.result.CommonResult;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,10 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/")
 public class OAuth2Controller {
 
+    @Resource
+    private AtlasSystemFeign atlasSystemFeign;
+
 
     @GetMapping("/oauth2/weibo/success")
     public String weibo(@RequestParam("code") String code) {
 
+        // fixme 发送http请求的工具类
         // 1、根据code换取 accessToken
 
         String accessToken = "";
@@ -37,10 +45,12 @@ public class OAuth2Controller {
 
     // 社交用户登录：登录和注册合并
     @GetMapping("/oauth2/login")
-    public String oauthLogin() {
+    public CommonResult<Void> oauthLogin() {
 
         // 登录或者注册这个社交用户
+        SysUserDTO sysUserDTO = new SysUserDTO();
+        atlasSystemFeign.createUserOAuth2(sysUserDTO);
 
-        return "";
+        return atlasSystemFeign.createUserOAuth2(sysUserDTO);
     }
 }

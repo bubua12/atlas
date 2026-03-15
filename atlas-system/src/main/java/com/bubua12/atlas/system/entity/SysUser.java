@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 /**
  * 用户实体类
+ * fixme 基础字段，比如创建时间、更新时间之类的所有底层持久化实体对象都需要的字段
  */
 @Data
 @TableName("sys_user")

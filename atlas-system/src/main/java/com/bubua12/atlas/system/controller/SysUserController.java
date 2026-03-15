@@ -1,15 +1,26 @@
 package com.bubua12.atlas.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.bubua12.atlas.api.system.dto.SysUserDTO;
 import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.common.security.annotation.RequiresPermission;
+import com.bubua12.atlas.system.converter.SysUserConverter;
 import com.bubua12.atlas.system.entity.SysUser;
 import com.bubua12.atlas.system.service.SysMenuService;
 import com.bubua12.atlas.system.service.SysUserService;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +37,9 @@ public class SysUserController {
     private final SysUserService sysUserService;
 
     private final SysMenuService sysMenuService;
+
+    @Resource
+    private SysUserConverter sysUserConverter;
 
     /**
      * 用户列表分页
@@ -107,6 +121,18 @@ public class SysUserController {
         return CommonResult.success(dto);
     }
 
+    /**
+     * 适用于OAuth2场景下首次创建用户
+     */
+    @PostMapping("/oauth2/createUser")
+    public CommonResult<Void> createUserOAuth2(@RequestBody SysUserDTO sysUserDTO) {
+
+        SysUser sysUser = sysUserConverter.vo2po(sysUserDTO);
+        sysUserService.create(sysUser);
+
+        return CommonResult.success();
+    }
+
 
     @GetMapping("/info/{username}")
     public CommonResult<UserDTO> getUserByUsername(@PathVariable("username") String username) {
@@ -131,7 +157,7 @@ public class SysUserController {
 
     @PostMapping("/verify-password")
     public CommonResult<Boolean> verifyPassword(@RequestParam("username") String username,
-                                                 @RequestParam("password") String password) {
+                                                @RequestParam("password") String password) {
         boolean valid = sysUserService.verifyPassword(username, password);
         return CommonResult.success(valid);
     }

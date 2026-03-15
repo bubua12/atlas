@@ -13,8 +13,8 @@
     <description>Atlas BOM - Dependency Version Management</description>
 
     <properties>
-        <spring-boot.version>3.2.3</spring-boot.version>
-        <spring-cloud.version>2023.0.0</spring-cloud.version>
+        <spring-boot.version>3.2.4</spring-boot.version>
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <druid.version>1.2.21</druid.version>
@@ -23,6 +23,9 @@
         <redisson.version>3.27.0</redisson.version>
         <atlas.version>${project.version}</atlas.version>
         <knife4j.version>4.4.0</knife4j.version>
+        <guava.version>32.1.3-jre</guava.version>
+        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <commons.collections4.version>4.4</commons.collections4.version>
     </properties>
 
     <dependencyManagement>
@@ -106,6 +109,24 @@
                 <version>${knife4j.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Apache Commons -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons.collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
 
             <!-- Atlas Common Modules -->
