@@ -25,3 +25,7 @@ atlas:
     agent-id: 1000002
     secret: hjf3RLF_tsS31OQzvd8AA-XRWJF1xylCIlZw4kIyojM
     redirect-uri: https://atlas.bubua12.com/login
+  weibo:
+    client-id: 4079653655
+    client-secret: 65ff2683f546e0848531842c27793d59
+    redirect-uri: https://atlas.bubua12.com/auth/success
