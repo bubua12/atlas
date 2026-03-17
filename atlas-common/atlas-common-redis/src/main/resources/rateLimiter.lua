@@ -1,20 +1,20 @@
---获取KEY,针对那个接口进行限流
+-- 获取KEY，针对哪个接口进行限流
 local key = KEYS[1]
---获取注解上标注的限流次数
+-- 获取注解上标注的限流次数 ==> 已经访问的次数+1不能超过这个次数，超过则说明已经访问过于频繁
 local limit = tonumber(ARGV[1])
 
-local curentLimit = tonumber(redis.call('get', key) or "0")
+-- 第一次访问，这里的值计算的结果是零
+local currentLimit = tonumber(redis.call('get', key) or "0")
 
---超过限流次数直接返回零，否则再走else分支
-if curentLimit + 1 > limit
+-- 超过限流次数直接返回零，否则再走else分支
+if currentLimit + 1 > limit
 then return 0
--- 首次直接进入
 else
-    -- 自增长 1
+    -- 计数器加一
     redis.call('INCRBY', key, 1)
-    -- 设置过期时间
-    redis.call('EXPIRE', key, ARGV[2])
-    return curentLimit + 1
+    -- 仅在第一次访问时设置过期时间，避免每次请求都重置倒计时
+    if currentLimit == 0 then
+        redis.call('EXPIRE', key, ARGV[2])
+    end
+    return currentLimit + 1
 end
-
---@RedisLimitAnnotation(key = "redis-limit:test", permitsPerSecond = 2, expire = 1, msg = "当前排队人数较多，请稍后再试！")

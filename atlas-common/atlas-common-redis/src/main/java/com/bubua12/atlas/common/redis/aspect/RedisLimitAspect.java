@@ -12,11 +12,11 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +41,9 @@ public class RedisLimitAspect {
 
     private DefaultRedisScript<Long> redisLuaScript;
 
+    /**
+     * 优先从类路径中加载Lua脚本
+     */
     @PostConstruct
     public void init() {
         redisLuaScript = new DefaultRedisScript<>();
@@ -85,9 +88,9 @@ public class RedisLimitAspect {
             // 系统异常: class java.lang.Long cannot be cast to class java.lang.String (java.lang.Long and java.lang.String are in module java.base of loader 'bootstrap')
             Long count = stringRedisTemplate.execute(redisLuaScript, redisLuaScriptKeysList,
                     String.valueOf(limit), String.valueOf(expire));
-            log.info("尝试访问计数，count is {} for key={}", count, limitKey);
+            log.debug("当前接口 {} 访问次数 {} ", limitKey, count);
             if (count == 0) {
-                log.info("方法 {} 触发接口限流", methodName);
+                log.debug("方法 {} 触发接口限流", methodName);
                 return CommonResult.fail(annotation.msg());
             }
         }
