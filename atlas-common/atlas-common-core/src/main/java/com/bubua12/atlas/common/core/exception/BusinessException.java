@@ -1,8 +1,7 @@
 package com.bubua12.atlas.common.core.exception;
 
+import com.bubua12.atlas.common.core.exception.code.ErrorCode;
 import lombok.Getter;
-
-import java.io.Serial;
 
 /**
  * 业务异常
@@ -10,19 +9,31 @@ import java.io.Serial;
  */
 @Getter
 public class BusinessException extends RuntimeException {
+    private final ErrorCode errorCode;
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    private final int code;
-
-    public BusinessException(String message) {
-        super(message);
-        this.code = 500;
+    public BusinessException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 
-    public BusinessException(int code, String message) {
+    // fixme final & super等基础知识里面的关键词的作用
+    public BusinessException(String message, ErrorCode errorCode) {
         super(message);
-        this.code = code;
+        this.errorCode = errorCode;
+    }
+
+    public BusinessException(String message, Throwable cause, ErrorCode errorCode) {
+        super(message, cause);
+        this.errorCode = errorCode;
+    }
+
+    public BusinessException(Throwable cause, ErrorCode errorCode) {
+        super(cause);
+        this.errorCode = errorCode;
+    }
+
+    public BusinessException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, ErrorCode errorCode) {
+        super(message, cause, enableSuppression, writableStackTrace);
+        this.errorCode = errorCode;
     }
 }

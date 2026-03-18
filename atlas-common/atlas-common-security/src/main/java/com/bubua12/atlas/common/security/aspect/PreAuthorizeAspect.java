@@ -2,12 +2,12 @@ package com.bubua12.atlas.common.security.aspect;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.bubua12.atlas.common.core.context.SecurityContextHolder;
+import com.bubua12.atlas.common.core.exception.BusinessErrorCode;
 import com.bubua12.atlas.common.core.exception.BusinessException;
-import com.bubua12.atlas.common.core.result.ResultCode;
+import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.annotation.RequiresPermission;
-import com.bubua12.atlas.common.core.context.SecurityContextHolder;
-import com.bubua12.atlas.common.core.model.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -43,7 +43,7 @@ public class PreAuthorizeAspect {
         String token = SecurityContextHolder.getToken();
         if (StrUtil.isBlank(token)) {
             // 尝试从 UserContextInterceptor 设置的 userId 判断是否已登录，但没有 Token 无法查 Redis 缓存
-            throw new BusinessException(ResultCode.UNAUTHORIZED.getCode(), "未登录或Token丢失");
+            throw new BusinessException(BusinessErrorCode.UNAUTHORIZED);
         }
 
         // 去掉 Bearer 前缀
@@ -54,7 +54,7 @@ public class PreAuthorizeAspect {
         // 2. 从 Redis 获取 LoginUser
         LoginUser loginUser = redisService.get(TOKEN_CACHE_PREFIX + token);
         if (loginUser == null) {
-            throw new BusinessException(ResultCode.UNAUTHORIZED.getCode(), "登录已过期");
+            throw new BusinessException(BusinessErrorCode.UNAUTHORIZED);
         }
 
         Long userId = loginUser.getUserId();
@@ -73,7 +73,7 @@ public class PreAuthorizeAspect {
 
         if (CollectionUtil.isEmpty(userPerms) || !userPerms.contains(requiredPerm)) {
             log.warn("用户 {} 权限不足，需要权限: {}，已有权限: {}", userId, requiredPerm, userPerms);
-            throw new BusinessException(ResultCode.FORBIDDEN.getCode(), "权限不足");
+            throw new BusinessException(BusinessErrorCode.FORBIDDEN);
         }
 
         return point.proceed();

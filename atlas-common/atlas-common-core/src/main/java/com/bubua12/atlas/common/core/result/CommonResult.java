@@ -35,15 +35,15 @@ public class CommonResult<T> implements Serializable {
     }
 
     public static <T> CommonResult<T> success() {
-        return new CommonResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), null);
+        return new CommonResult<>(ResultCodeEnum.RC200.getCode(), ResultCodeEnum.RC200.getMessage(), null);
     }
 
     public static <T> CommonResult<T> success(T data) {
-        return new CommonResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), data);
+        return new CommonResult<>(ResultCodeEnum.RC200.getCode(), ResultCodeEnum.RC200.getMessage(), data);
     }
 
     public static <T> CommonResult<T> fail(String msg) {
-        return new CommonResult<>(ResultCode.FAILED.getCode(), msg, null);
+        return new CommonResult<>(ResultCodeEnum.RC500.getCode(), msg, null);
     }
 
     public static <T> CommonResult<T> fail(int code, String msg) {

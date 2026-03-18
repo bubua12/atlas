@@ -99,6 +99,11 @@ public class RedisLimitAspect {
             // 放行
             result = pjp.proceed();
         } catch (Throwable e) {
+            // 如果是运行时异常，包含自定义的业务异常，直接原样抛出 fixme 异常的分类以及正确使用，什么是受检异常？
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
+            // 对于其他异常如IOException等，再进行包装
             throw new RuntimeException(e);
         }
 
