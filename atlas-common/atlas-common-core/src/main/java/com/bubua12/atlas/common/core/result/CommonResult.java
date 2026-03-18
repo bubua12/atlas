@@ -21,7 +21,7 @@ public class CommonResult<T> implements Serializable {
     private T data;
 
     /**
-     * fixme 链路追踪
+     * 链路追踪
      */
     private String traceId;
 

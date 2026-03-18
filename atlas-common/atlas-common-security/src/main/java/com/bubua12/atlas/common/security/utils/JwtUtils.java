@@ -93,7 +93,6 @@ public class JwtUtils {
 
     /**
      * 判断令牌是否已过期
-     * fixme 这里如果删除 redis里的信息，并不会使token过期，返回结果还是true
      */
     public boolean isTokenExpired(String token) {
         try {

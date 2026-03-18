@@ -33,13 +33,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SysUserController {
 
-    // fixme 这样写为什么也可以进行自动注入
     private final SysUserService sysUserService;
 
     private final SysMenuService sysMenuService;
 
-    @Resource
-    private SysUserConverter sysUserConverter;
+    private final SysUserConverter sysUserConverter;
 
     /**
      * 用户列表分页

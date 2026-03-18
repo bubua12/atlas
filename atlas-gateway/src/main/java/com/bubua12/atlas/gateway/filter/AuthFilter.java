@@ -42,8 +42,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // fixme 规划化日志打印输出
-        log.info("执行了过滤器... ...");
+        log.debug("execute filter... ...");
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 

@@ -74,7 +74,6 @@ public class RedisLimitAspect {
             String className = method.getDeclaringClass().getName();
             String methodName = method.getName();
 
-            // fixme 这里连接符需要注意为啥原生的是制表符
             String limitKey = className + ":" + methodName + ":" + key;
             log.info("Redis限流注解信息，限流的key: {}", limitKey);
 
@@ -84,8 +83,6 @@ public class RedisLimitAspect {
             List<String> redisLuaScriptKeysList = new ArrayList<>();
             redisLuaScriptKeysList.add(limitKey);
 
-            // fixme 这里原生数据类型也不报错，但是执行报错类型转换异常
-            // 系统异常: class java.lang.Long cannot be cast to class java.lang.String (java.lang.Long and java.lang.String are in module java.base of loader 'bootstrap')
             Long count = stringRedisTemplate.execute(redisLuaScript, redisLuaScriptKeysList,
                     String.valueOf(limit), String.valueOf(expire));
             log.debug("当前接口 {} 访问次数 {} ", limitKey, count);
@@ -99,7 +96,7 @@ public class RedisLimitAspect {
             // 放行
             result = pjp.proceed();
         } catch (Throwable e) {
-            // 如果是运行时异常，包含自定义的业务异常，直接原样抛出 fixme 异常的分类以及正确使用，什么是受检异常？
+            // 如果是运行时异常，包含自定义的业务异常，直接原样抛出
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             }
