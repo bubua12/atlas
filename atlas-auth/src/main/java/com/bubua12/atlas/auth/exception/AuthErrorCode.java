@@ -11,6 +11,18 @@ import com.bubua12.atlas.common.core.exception.code.ErrorCode;
 public enum AuthErrorCode implements ErrorCode {
 
     /**
+     * Token已过期，请重新登录
+     */
+    TOKEN_EXPIRED(461, "Token已过期，请重新登录"),
+    /**
+     * 账户已被锁定
+     */
+    ACCOUNT_LOCKED(452, "账户已被锁定，请稍后再试"),
+    /**
+     * IP已被锁定
+     */
+    IP_LOCKED(451, "IP已被锁定，请稍后再试"),
+    /**
      * 用户名或密码错误
      */
     USERNAME_OR_PASSWORD_WRONG(450, "用户名或密码错误"),

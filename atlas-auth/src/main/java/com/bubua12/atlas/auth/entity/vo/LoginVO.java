@@ -1,4 +1,4 @@
-package com.bubua12.atlas.auth.vo;
+package com.bubua12.atlas.auth.entity.vo;
 
 import lombok.Data;
 

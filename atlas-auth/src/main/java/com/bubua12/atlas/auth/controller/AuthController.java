@@ -1,8 +1,8 @@
 package com.bubua12.atlas.auth.controller;
 
-import com.bubua12.atlas.auth.form.LoginRequest;
+import com.bubua12.atlas.auth.entity.request.LoginRequest;
 import com.bubua12.atlas.auth.service.AuthService;
-import com.bubua12.atlas.auth.vo.LoginVO;
+import com.bubua12.atlas.auth.entity.vo.LoginVO;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.common.log.annotation.OperLog;
 import com.bubua12.atlas.common.redis.annotation.RedisLimit;

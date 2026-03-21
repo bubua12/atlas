@@ -1,99 +1,55 @@
 package com.bubua12.atlas.auth.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.bubua12.atlas.auth.entity.SysLoginFailRecord;
-import com.bubua12.atlas.auth.mapper.SysLoginFailRecordMapper;
+import com.bubua12.atlas.api.auth.constant.AuthCacheConstant;
 import com.bubua12.atlas.auth.service.LoginFailRecordService;
+import com.bubua12.atlas.common.redis.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 登录失败记录服务实现
+ * 纯 Redis 实现：INCR 原子计数 + TTL 自动过期锁定
  */
 @Service
 @RequiredArgsConstructor
 public class LoginFailRecordServiceImpl implements LoginFailRecordService {
 
-    private final SysLoginFailRecordMapper mapper;
+    private final RedisService redisService;
 
     // TODO: 从系统配置读取
     private static final int IP_FAIL_MAX = 5;
     private static final int ACCOUNT_FAIL_MAX = 5;
     private static final int LOCK_DURATION_MINUTES = 30;
 
-    @Override
-    public boolean isIpLocked(String ip) {
-        return isLocked("IP", ip);
-    }
-
-    @Override
-    public boolean isAccountLocked(String username) {
-        return isLocked("ACCOUNT", username);
-    }
 
     @Override
     public void recordLoginFail(String ip, String username) {
-        recordFail("IP", ip, IP_FAIL_MAX);
-        recordFail("ACCOUNT", username, ACCOUNT_FAIL_MAX);
+        recordFailToRedis(AuthCacheConstant.AUTH_FAIL_IP_PREFIX + ip,
+                AuthCacheConstant.AUTH_LOCK_IP_PREFIX + ip, IP_FAIL_MAX);
+        recordFailToRedis(AuthCacheConstant.AUTH_FAIL_ACCOUNT_PREFIX + username,
+                AuthCacheConstant.AUTH_LOCK_ACCOUNT_PREFIX + username, ACCOUNT_FAIL_MAX);
     }
 
     @Override
     public void clearLoginFail(String ip, String username) {
-        clearRecord("IP", ip);
-        clearRecord("ACCOUNT", username);
+        redisService.delete(AuthCacheConstant.AUTH_FAIL_IP_PREFIX + ip);
+        redisService.delete(AuthCacheConstant.AUTH_LOCK_IP_PREFIX + ip);
+        redisService.delete(AuthCacheConstant.AUTH_FAIL_ACCOUNT_PREFIX + username);
+        redisService.delete(AuthCacheConstant.AUTH_LOCK_ACCOUNT_PREFIX + username);
     }
 
-    private boolean isLocked(String type, String key) {
-        SysLoginFailRecord record = getRecord(type, key);
-        if (record == null || record.getLocked() == 0) {
-            return false;
+    /**
+     * Redis INCR 原子计数，首次设 TTL，达阈值写入锁定 key
+     */
+    private void recordFailToRedis(String failKey, String lockKey, int maxFail) {
+        Long count = redisService.increment(failKey);
+        if (count != null && count == 1) {
+            redisService.expire(failKey, LOCK_DURATION_MINUTES, TimeUnit.MINUTES);
         }
-        // 检查锁定是否过期
-        if (record.getLockTime() != null &&
-            record.getLockTime().plusMinutes(LOCK_DURATION_MINUTES).isBefore(LocalDateTime.now())) {
-            // 锁定已过期，解锁
-            record.setLocked(0);
-            record.setFailCount(0);
-            mapper.updateById(record);
-            return false;
+        if (count != null && count >= maxFail) {
+            redisService.set(lockKey, 1, LOCK_DURATION_MINUTES, TimeUnit.MINUTES);
         }
-        return true;
-    }
-
-    private void recordFail(String type, String key, int maxFail) {
-        SysLoginFailRecord record = getRecord(type, key);
-        if (record == null) {
-            record = new SysLoginFailRecord();
-            record.setRecordType(type);
-            record.setRecordKey(key);
-            record.setFailCount(1);
-            record.setLocked(0);
-            record.setLastFailTime(LocalDateTime.now());
-            mapper.insert(record);
-        } else {
-            record.setFailCount(record.getFailCount() + 1);
-            record.setLastFailTime(LocalDateTime.now());
-            if (record.getFailCount() >= maxFail) {
-                record.setLocked(1);
-                record.setLockTime(LocalDateTime.now());
-            }
-            mapper.updateById(record);
-        }
-    }
-
-    private void clearRecord(String type, String key) {
-        LambdaQueryWrapper<SysLoginFailRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysLoginFailRecord::getRecordType, type)
-               .eq(SysLoginFailRecord::getRecordKey, key);
-        mapper.delete(wrapper);
-    }
-
-    private SysLoginFailRecord getRecord(String type, String key) {
-        LambdaQueryWrapper<SysLoginFailRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysLoginFailRecord::getRecordType, type)
-               .eq(SysLoginFailRecord::getRecordKey, key);
-        return mapper.selectOne(wrapper);
     }
 }

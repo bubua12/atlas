@@ -6,16 +6,6 @@ package com.bubua12.atlas.auth.service;
 public interface LoginFailRecordService {
 
     /**
-     * 检查 IP 是否被锁定
-     */
-    boolean isIpLocked(String ip);
-
-    /**
-     * 检查账号是否被锁定
-     */
-    boolean isAccountLocked(String username);
-
-    /**
      * 记录登录失败
      */
     void recordLoginFail(String ip, String username);

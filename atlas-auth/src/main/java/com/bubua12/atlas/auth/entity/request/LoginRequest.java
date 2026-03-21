@@ -1,4 +1,4 @@
-package com.bubua12.atlas.auth.form;
+package com.bubua12.atlas.auth.entity.request;
 
 import lombok.Data;
 

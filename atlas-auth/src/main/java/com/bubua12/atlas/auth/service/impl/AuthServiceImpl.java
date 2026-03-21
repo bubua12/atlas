@@ -1,13 +1,18 @@
 package com.bubua12.atlas.auth.service.impl;
 
+import com.bubua12.atlas.api.auth.constant.AuthCacheConstant;
 import com.bubua12.atlas.api.system.dto.UserDTO;
-import com.bubua12.atlas.auth.form.LoginRequest;
+import com.bubua12.atlas.auth.converter.AuthConverter;
+import com.bubua12.atlas.auth.exception.AuthErrorCode;
+import com.bubua12.atlas.auth.exception.AuthException;
+import com.bubua12.atlas.auth.entity.request.LoginRequest;
 import com.bubua12.atlas.auth.handler.LoginHandlerFactory;
 import com.bubua12.atlas.auth.service.AuthService;
 import com.bubua12.atlas.auth.service.LoginFailRecordService;
-import com.bubua12.atlas.auth.vo.LoginVO;
-import com.bubua12.atlas.common.redis.service.RedisService;
+import com.bubua12.atlas.auth.utils.AuthUtils;
+import com.bubua12.atlas.auth.entity.vo.LoginVO;
 import com.bubua12.atlas.common.core.model.LoginUser;
+import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,17 +38,16 @@ public class AuthServiceImpl implements AuthService {
     private JwtUtils jwtUtils;
     @Resource
     private LoginFailRecordService loginFailRecordService;
+    @Resource
+    private AuthUtils authUtils;
+    @Resource
+    private AuthConverter authConverter;
 
     /**
      * JWT 过期时间（秒），从配置文件读取
      */
     @Value("${atlas.jwt.expiration}")
     private long expiration;
-
-    /**
-     * Redis 中登录令牌的 key 前缀
-     */
-    private static final String TOKEN_CACHE_PREFIX = "auth:token:";
 
     /**
      * 统一登录流程：
@@ -57,16 +61,9 @@ public class AuthServiceImpl implements AuthService {
     public LoginVO login(LoginRequest loginRequest, String clientIp) {
         String username = loginRequest.getUsername();
 
-        // fixme 这里的逻辑修改为从Redis里面获取以及判断
-
-        // 检查 IP 是否被锁定
-        if (clientIp != null && loginFailRecordService.isIpLocked(clientIp)) {
-            throw new RuntimeException("IP 已被锁定，请稍后再试");
-        }
-
-        // 检查账号是否被锁定
-        if (username != null && loginFailRecordService.isAccountLocked(username)) {
-            throw new RuntimeException("账号已被锁定，请稍后再试");
+        // Pipeline 一次网络往返检查 IP + 账号锁定
+        if (clientIp != null && username != null) {
+            authUtils.checkLoginLock(clientIp, username);
         }
 
         try {
@@ -77,12 +74,10 @@ public class AuthServiceImpl implements AuthService {
 
             String token = jwtUtils.generateToken(user.getUserId(), user.getUsername());
 
-            LoginUser loginUser = new LoginUser();
-            loginUser.setUserId(user.getUserId());
-            loginUser.setUsername(user.getUsername());
+            LoginUser loginUser = authConverter.po2vo(user);
             loginUser.setToken(token);
-            loginUser.setPermissions(user.getPermissions());
-            redisService.set(TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
+
+            redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
 
             // 登录成功，清除失败记录
             if (clientIp != null && username != null) {
@@ -107,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(String token) {
-        redisService.delete(TOKEN_CACHE_PREFIX + token);
+        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
     }
 
     /**
@@ -116,17 +111,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginVO refreshToken(String token) {
         if (jwtUtils.isTokenExpired(token)) {
-            throw new RuntimeException("Token已过期，请重新登录");
+            throw new AuthException(AuthErrorCode.TOKEN_EXPIRED);
         }
         Long userId = jwtUtils.getUserId(token);
         String username = jwtUtils.getUsername(token);
-        LoginUser loginUser = redisService.get(TOKEN_CACHE_PREFIX + token);
-        redisService.delete(TOKEN_CACHE_PREFIX + token);
+        LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
+        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
 
         String newToken = jwtUtils.generateToken(userId, username);
         if (loginUser != null) {
             loginUser.setToken(newToken);
-            redisService.set(TOKEN_CACHE_PREFIX + newToken, loginUser, expiration, TimeUnit.SECONDS);
+            redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + newToken, loginUser, expiration, TimeUnit.SECONDS);
         }
         LoginVO loginVO = new LoginVO();
         loginVO.setToken(newToken);

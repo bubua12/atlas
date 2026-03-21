@@ -2,7 +2,7 @@ package com.bubua12.atlas.auth.handler;
 
 import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.auth.feign.AtlasSystemFeign;
-import com.bubua12.atlas.auth.form.LoginRequest;
+import com.bubua12.atlas.auth.entity.request.LoginRequest;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import jakarta.annotation.Resource;

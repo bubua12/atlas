@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>atlas-common-api</artifactId>
+    <description>职责分离原则，该模块放置跨服务通信契约：如Feign接口用的DTO和共享常量等</description>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

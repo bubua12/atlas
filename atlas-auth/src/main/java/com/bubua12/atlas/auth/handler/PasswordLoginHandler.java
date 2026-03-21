@@ -4,7 +4,7 @@ import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.auth.exception.AuthErrorCode;
 import com.bubua12.atlas.auth.exception.AuthException;
 import com.bubua12.atlas.auth.feign.AtlasSystemFeign;
-import com.bubua12.atlas.auth.form.LoginRequest;
+import com.bubua12.atlas.auth.entity.request.LoginRequest;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
 package com.bubua12.atlas.auth.service;
 
-import com.bubua12.atlas.auth.form.LoginRequest;
-import com.bubua12.atlas.auth.vo.LoginVO;
+import com.bubua12.atlas.auth.entity.request.LoginRequest;
+import com.bubua12.atlas.auth.entity.vo.LoginVO;
 
 /**
  * 认证服务接口
