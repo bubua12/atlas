@@ -46,9 +46,4 @@ public class LoginRequest {
      * 微信授权码（微信登录时使用）
      */
     private String wxCode;
-
-    /**
-     * 客户端 IP 地址（用于防暴力破解）
-     */
-    private String clientIp;
 }

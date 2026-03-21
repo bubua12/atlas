@@ -27,6 +27,11 @@ public class LoginUser implements Serializable {
     private String username;
 
     /**
+     * 客户端IP
+     */
+    private String clientIp;
+
+    /**
      * 当前会话的 JWT 令牌
      */
     private String token;

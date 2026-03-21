@@ -26,6 +26,11 @@ public class OnlineUserVO {
     private String token;
 
     /**
+     * 客户端IP
+     */
+    private String clientIp;
+
+    /**
      * 登录时间
      */
     private LocalDateTime loginTime;

@@ -76,6 +76,7 @@ public class AuthServiceImpl implements AuthService {
 
             LoginUser loginUser = authConverter.po2vo(user);
             loginUser.setToken(token);
+            loginUser.setClientIp(clientIp);
 
             redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
 

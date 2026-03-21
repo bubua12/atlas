@@ -10,18 +10,18 @@ CREATE TABLE IF NOT EXISTS sys_config (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置表';
 
 -- 登录失败记录表
-CREATE TABLE IF NOT EXISTS sys_login_fail_record (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
-    record_type VARCHAR(20) NOT NULL COMMENT '记录类型：IP/ACCOUNT',
-    record_key VARCHAR(100) NOT NULL COMMENT 'IP地址或用户名',
-    fail_count INT DEFAULT 0 COMMENT '失败次数',
-    locked TINYINT DEFAULT 0 COMMENT '是否锁定：0否 1是',
-    lock_time DATETIME COMMENT '锁定时间',
-    last_fail_time DATETIME COMMENT '最后失败时间',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    UNIQUE KEY uk_type_key (record_type, record_key)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='登录失败记录表';
+-- CREATE TABLE IF NOT EXISTS sys_login_fail_record (
+--     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
+--     record_type VARCHAR(20) NOT NULL COMMENT '记录类型：IP/ACCOUNT',
+--     record_key VARCHAR(100) NOT NULL COMMENT 'IP地址或用户名',
+--     fail_count INT DEFAULT 0 COMMENT '失败次数',
+--     locked TINYINT DEFAULT 0 COMMENT '是否锁定：0否 1是',
+--     lock_time DATETIME COMMENT '锁定时间',
+--     last_fail_time DATETIME COMMENT '最后失败时间',
+--     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+--     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+--     UNIQUE KEY uk_type_key (record_type, record_key)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='登录失败记录表';
 
 -- 初始化默认配置
 INSERT INTO sys_config (config_key, config_value, config_type, description) VALUES

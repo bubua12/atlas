@@ -1,12 +1,11 @@
 package com.bubua12.atlas.monitor.service;
 
-import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.core.model.LoginUser;
+import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
 import com.bubua12.atlas.monitor.vo.OnlineUserVO;
 import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -50,17 +49,19 @@ public class OnlineUserService {
             OnlineUserVO vo = new OnlineUserVO();
             vo.setUserId(loginUser.getUserId());
             vo.setUsername(loginUser.getUsername());
-            vo.setToken(loginUser.getToken());
+            // 不显示隐私token
+//            vo.setToken(loginUser.getToken());
+            vo.setClientIp(loginUser.getClientIp());
 
             try {
                 Claims claims = jwtUtils.parseToken(loginUser.getToken());
                 vo.setLoginTime(LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(claims.getIssuedAt().getTime()),
-                    ZoneId.systemDefault()
+                        Instant.ofEpochMilli(claims.getIssuedAt().getTime()),
+                        ZoneId.systemDefault()
                 ));
                 vo.setExpireTime(LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(claims.getExpiration().getTime()),
-                    ZoneId.systemDefault()
+                        Instant.ofEpochMilli(claims.getExpiration().getTime()),
+                        ZoneId.systemDefault()
                 ));
             } catch (Exception ignored) {
             }
