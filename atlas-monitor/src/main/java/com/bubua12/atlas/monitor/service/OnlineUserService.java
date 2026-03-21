@@ -49,8 +49,7 @@ public class OnlineUserService {
             OnlineUserVO vo = new OnlineUserVO();
             vo.setUserId(loginUser.getUserId());
             vo.setUsername(loginUser.getUsername());
-            // 不显示隐私token
-//            vo.setToken(loginUser.getToken());
+            vo.setToken(loginUser.getToken());
             vo.setClientIp(loginUser.getClientIp());
 
             try {
