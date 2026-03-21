@@ -54,12 +54,13 @@ public class AuthServiceImpl implements AuthService {
      * 5. 清除登录失败记录
      */
     @Override
-    public LoginVO login(LoginRequest loginRequest) {
-        String ip = loginRequest.getClientIp();
+    public LoginVO login(LoginRequest loginRequest, String clientIp) {
         String username = loginRequest.getUsername();
 
+        // fixme 这里的逻辑修改为从Redis里面获取以及判断
+
         // 检查 IP 是否被锁定
-        if (ip != null && loginFailRecordService.isIpLocked(ip)) {
+        if (clientIp != null && loginFailRecordService.isIpLocked(clientIp)) {
             throw new RuntimeException("IP 已被锁定，请稍后再试");
         }
 
@@ -84,8 +85,8 @@ public class AuthServiceImpl implements AuthService {
             redisService.set(TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
 
             // 登录成功，清除失败记录
-            if (ip != null && username != null) {
-                loginFailRecordService.clearLoginFail(ip, username);
+            if (clientIp != null && username != null) {
+                loginFailRecordService.clearLoginFail(clientIp, username);
             }
 
             LoginVO loginVO = new LoginVO();
@@ -94,8 +95,8 @@ public class AuthServiceImpl implements AuthService {
             return loginVO;
         } catch (Exception e) {
             // 登录失败，记录失败次数
-            if (ip != null && username != null) {
-                loginFailRecordService.recordLoginFail(ip, username);
+            if (clientIp != null && username != null) {
+                loginFailRecordService.recordLoginFail(clientIp, username);
             }
             throw e;
         }

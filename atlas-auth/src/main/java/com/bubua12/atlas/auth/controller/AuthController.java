@@ -6,6 +6,7 @@ import com.bubua12.atlas.auth.vo.LoginVO;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.common.log.annotation.OperLog;
 import com.bubua12.atlas.common.redis.annotation.RedisLimit;
+import com.bubua12.atlas.common.web.annotation.ClientIp;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -35,13 +36,13 @@ public class AuthController {
 
     /**
      * 统一登录入口，根据 grantType 分发到不同登录方式
-     * fixme 接口限流
+     * fixme √接口限流  按照ip限流，同一个ip访问失败多少次后限制登录
      */
     @PostMapping("/login")
     @RedisLimit(key = "login", permitsPerSecond = 5)
-    @OperLog(title = "登录", businessType = "读取") // fixme 规范化配置
-    public CommonResult<LoginVO> login(@RequestBody LoginRequest loginRequest) {
-        LoginVO loginVO = authService.login(loginRequest);
+    @OperLog(title = "登录", businessType = "读取")
+    public CommonResult<LoginVO> login(@RequestBody LoginRequest loginRequest, @ClientIp String clientIp) {
+        LoginVO loginVO = authService.login(loginRequest, clientIp);
         return CommonResult.success(loginVO);
     }
 
