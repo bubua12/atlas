@@ -24,25 +24,25 @@ public interface AtlasSystemFeign {
      * 根据用户名查询用户信息（密码登录使用）
      */
     @GetMapping("/info/{username}")
-    CommonResult<UserDTO> getUserByUsername(@PathVariable(value = "username") String username);
+    CommonResult<UserDTO> getUserByUsername(@PathVariable String username);
 
     /**
      * 根据用户ID查询用户信息
      */
     @GetMapping("/{userId}")
-    CommonResult<UserDTO> getUserById(@PathVariable("userId") Long userId);
+    CommonResult<UserDTO> getUserById(@PathVariable Long userId);
 
     /**
      * 根据手机号查询用户信息（验证码登录使用）
      */
     @GetMapping("/phone/{phone}")
-    CommonResult<UserDTO> getUserByPhone(@PathVariable("phone") String phone);
+    CommonResult<UserDTO> getUserByPhone(@PathVariable String phone);
 
     /**
      * 根据微信 openId 查询用户信息（微信登录使用）
      */
     @GetMapping("/openid/{openId}")
-    CommonResult<UserDTO> getUserByOpenId(@PathVariable("openId") String openId);
+    CommonResult<UserDTO> getUserByOpenId(@PathVariable String openId);
 
     /**
      * 验证用户密码

@@ -10,7 +10,6 @@ import com.bubua12.atlas.system.converter.SysUserConverter;
 import com.bubua12.atlas.system.entity.SysUser;
 import com.bubua12.atlas.system.service.SysMenuService;
 import com.bubua12.atlas.system.service.SysUserService;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -97,7 +96,7 @@ public class SysUserController {
      */
     @RequiresPermission("system:user:remove")
     @DeleteMapping("/{userId}")
-    public CommonResult<Void> delete(@PathVariable("userId") Long userId) {
+    public CommonResult<Void> delete(@PathVariable Long userId) {
         sysUserService.delete(userId);
         return CommonResult.success();
     }
@@ -110,7 +109,7 @@ public class SysUserController {
      * @return CommonResult<UserDTO>
      */
     @GetMapping("/phone/{phone}")
-    public CommonResult<UserDTO> getUserByPhone(@PathVariable("phone") String phone) {
+    public CommonResult<UserDTO> getUserByPhone(@PathVariable String phone) {
         SysUser user = sysUserService.getByPhone(phone);
         if (user == null) {
             return CommonResult.fail("User not found");
@@ -133,7 +132,7 @@ public class SysUserController {
 
 
     @GetMapping("/info/{username}")
-    public CommonResult<UserDTO> getUserByUsername(@PathVariable("username") String username) {
+    public CommonResult<UserDTO> getUserByUsername(@PathVariable String username) {
         SysUser user = sysUserService.getByUsername(username);
         if (user == null) {
             return CommonResult.fail("User not found");
@@ -144,7 +143,7 @@ public class SysUserController {
 
 
     @GetMapping("/openid/{openId}")
-    public CommonResult<UserDTO> getUserByOpenId(@PathVariable("openId") String openId) {
+    public CommonResult<UserDTO> getUserByOpenId(@PathVariable String openId) {
         SysUser user = sysUserService.getByOpenId(openId);
         if (user == null) {
             return CommonResult.fail("User not found");

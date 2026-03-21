@@ -24,7 +24,7 @@ public class OnlineUserController {
     }
 
     @DeleteMapping("/{token}")
-    public CommonResult<Void> kickOut(@PathVariable("token") String token) {
+    public CommonResult<Void> kickOut(@PathVariable String token) {
         onlineUserService.kickOut(token);
         return CommonResult.success();
     }
