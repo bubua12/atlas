@@ -40,6 +40,10 @@
             <groupId>com.bubua12.atlas</groupId>
             <artifactId>atlas-common-mybatis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-opentelemetry</artifactId>
+        </dependency>
 
         <!-- 审计日志模块 -->
         <dependency>

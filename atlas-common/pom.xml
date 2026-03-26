@@ -25,6 +25,7 @@
         <module>atlas-common-log</module>
         <module>atlas-common-api</module>
         <module>atlas-common-concurrent</module>
+        <module>atlas-common-opentelemetry</module>
     </modules>
 
 </project>
