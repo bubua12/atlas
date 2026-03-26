@@ -13,6 +13,6 @@ bubua12:
       logging-pattern-level: "traceId=%mdc{traceId} spanId=%mdc{spanId} %5p"
       otlp:
         enabled: true
-        endpoint: http://10.0.8.200:32043
+        endpoint: ${OTEL_ENDPOINT:http://10.0.8.200:32043}
         timeout: 10s
       sampling-probability: 1.0
