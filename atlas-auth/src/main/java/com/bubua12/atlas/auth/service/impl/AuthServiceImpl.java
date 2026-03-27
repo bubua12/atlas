@@ -15,6 +15,7 @@ import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
  * 认证服务实现
  * 核心职责：通过策略模式委托认证，认证通过后生成 JWT 并缓存到 Redis。
  */
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -77,6 +79,8 @@ public class AuthServiceImpl implements AuthService {
             LoginUser loginUser = authConverter.po2vo(user);
             loginUser.setToken(token);
             loginUser.setClientIp(clientIp);
+
+            log.info("当前登录用户存入Redis => {}", loginUser);
 
             redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
 
