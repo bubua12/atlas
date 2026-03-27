@@ -22,6 +22,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-redis</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>

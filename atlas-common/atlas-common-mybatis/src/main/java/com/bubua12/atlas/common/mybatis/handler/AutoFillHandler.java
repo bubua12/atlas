@@ -3,7 +3,6 @@ package com.bubua12.atlas.common.mybatis.handler;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
  * 新增时自动填充 createTime、updateTime，更新时自动填充 updateTime。
  */
 @Slf4j
-@Component
+// 这里没必要使用 @Component 因为不会被扫描、并且如果被扫描了，还会导致重复注册 bean
 public class AutoFillHandler implements MetaObjectHandler {
 
     @Override

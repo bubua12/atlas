@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bubua12.atlas.system.mapper.SysUserMapper">
+
+    <select id="pageUser" resultType="com.bubua12.atlas.system.entity.SysUser">
+        SELECT u.*
+        FROM sys_user u
+        WHERE u.deleted = 0
+        <if test="username != null and username != ''">
+            AND u.username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        ORDER BY u.create_time DESC
+    </select>
+
+</mapper>

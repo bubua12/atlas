@@ -29,5 +29,5 @@ public @interface DataScope {
     /**
      * 用户字段名
      */
-    String userField() default "id";
+    String userField() default "user_id";
 }

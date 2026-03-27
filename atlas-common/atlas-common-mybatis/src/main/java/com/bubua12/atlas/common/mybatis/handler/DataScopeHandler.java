@@ -4,14 +4,12 @@ import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.mybatis.annotation.DataScope;
 import com.bubua12.atlas.common.mybatis.enums.DataScopeType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 
 /**
  * 数据权限处理器
  */
 @Slf4j
-@Component
 public class DataScopeHandler {
 
     /**
