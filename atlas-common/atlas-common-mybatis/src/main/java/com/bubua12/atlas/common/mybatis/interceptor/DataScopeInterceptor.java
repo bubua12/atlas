@@ -23,7 +23,6 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
@@ -31,7 +30,6 @@ import java.lang.reflect.Method;
  * 数据权限拦截器
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 @Intercepts({
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
@@ -60,6 +58,7 @@ public class DataScopeInterceptor implements Interceptor {
 
         // 生成数据权限过滤条件
         String condition = dataScopeHandler.buildDataScopeCondition(dataScope, loginUser);
+        log.info("生成数据权限过滤条件：{}", condition);
         if (condition == null || condition.isEmpty()) {
             return invocation.proceed();
         }
@@ -68,6 +67,7 @@ public class DataScopeInterceptor implements Interceptor {
         BoundSql boundSql = ms.getBoundSql(parameter);
         String originalSql = boundSql.getSql();
         String newSql = rewriteSql(originalSql, condition);
+        log.info("替换的SQL: {}", newSql);
 
         // 替换 SQL
         PluginUtils.MPBoundSql mpBoundSql = PluginUtils.mpBoundSql(boundSql);

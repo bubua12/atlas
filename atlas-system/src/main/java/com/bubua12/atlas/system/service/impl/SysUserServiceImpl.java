@@ -23,7 +23,8 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public IPage<SysUser> list(PageQuery query) {
         Page<SysUser> page = new Page<>(query.getPageNum(), query.getPageSize());
-        return sysUserMapper.selectPage(page, null);
+        // 使用带数据权限的查询方法
+        return sysUserMapper.pageUser(page, null);
     }
 
     @Override

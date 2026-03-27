@@ -49,65 +49,6 @@ AND dept_id IN (当前用户可见的部门ID列表)  -- 数据权限过滤
 
 这样可以确保不同角色的用户在调用同一个接口时，自动看到符合其权限范围的数据。
 
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-> 
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-? for shortcuts
-▐▛███▜▌   Claude Code v2.1.84
-▝▜█████▛▘  Opus 4.6 (1M context) with medium effort · API Usage Billing
-▘▘ ▝▝    D:\workspaces\IdeaProjects\atlas
-
-> 一般的微服务系统，比如一些微服务管理平台，数据权限指的是什么意思呀？
-
-● 数据权限是指控制用户能够访问和操作哪些数据范围的权限机制，与功能权限（能做什么操作）不同，它关注的是能看到/操作哪些数
-据。
-
-在微服务管理平台中，常见的数据权限场景：
-
-1. 部门数据权限
-- 全部数据：能看到所有部门的数据
-- 本部门及下级部门：只能看到自己部门和子部门的数据
-- 仅本部门：只能看到本部门数据
-- 仅本人：只能看到自己创建/负责的数据
-
-2. 典型应用场景
-   // 用户 A（销售部经理）查询订单列表
-   // → 只返回销售部及其下属团队的订单
-
-// 用户 B（普通销售）查询订单列表
-// → 只返回自己负责的客户订单
-
-// 用户 C（超级管理员）查询订单列表
-// → 返回全公司所有订单
-
-3. 实现方式
-
-通常在 SQL 查询时动态拼接过滤条件：
-
-// 伪代码示例
-SELECT * FROM sys_user
-WHERE deleted = 0
-AND dept_id IN (当前用户可见的部门ID列表)  -- 数据权限过滤
-
-4. 与功能权限的区别
-
-┌──────────┬────────────────┬──────────────────────────────────────┐
-│   类型   │    控制内容    │                 示例                 │
-├──────────┼────────────────┼──────────────────────────────────────┤
-│ 功能权限 │ 能否执行某操作 │ system:user:list（能否查看用户列表） │
-├──────────┼────────────────┼──────────────────────────────────────┤
-│ 数据权限 │ 能看到哪些数据 │ 只能看到本部门的用户，而非全部用户   │
-└──────────┴────────────────┴──────────────────────────────────────┘
-
-5. 在 Atlas 项目中的潜在实现位置
-
-如果要添加数据权限，通常会：
-- 在 sys_role 表增加 data_scope 字段（1=全部，2=本部门及下级，3=仅本部门，4=仅本人）
-- 在 MyBatis 拦截器或 AOP 中自动注入数据过滤条件
-- 结合 sys_user 的 dept_id 和部门层级关系进行过滤
-
-这样可以确保不同角色的用户在调用同一个接口时，自动看到符合其权限范围的数据。
-
 > 我想要实现一个注解驱动的数据权限功能，你先给我一个实现的方案以及思路
 
 ● 我来给你设计一个注解驱动的数据权限方案，适配 Atlas 项目的架构风格。
@@ -1155,6 +1096,113 @@ DBA 分析数据库性能
 4. 优化索引或 SQL 结构
 
 这样理解了吗？
+
+---
+
+## @DataScope 注解使用指南
+
+### 注解定义
+
+```java
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface DataScope {
+    String deptAlias() default "";      // 部门表别名
+    String userAlias() default "";      // 用户表别名
+    String deptField() default "dept_id"; // 部门字段名
+    String userField() default "user_id"; // 用户字段名
+}
+```
+
+### 使用位置
+
+标注在 **Mapper 接口的方法上**，用于自动过滤查询结果。
+
+### 使用示例
+
+**场景 1：用户列表（关联部门表）**
+
+```java
+@Mapper
+public interface SysUserMapper extends BaseMapper<SysUser> {
+
+    @DataScope(deptAlias = "d", userAlias = "u")
+    List<SysUser> selectUserList(@Param("query") UserQuery query);
+}
+```
+
+对应 SQL：
+```sql
+SELECT u.* FROM sys_user u
+LEFT JOIN sys_dept d ON u.dept_id = d.id
+WHERE u.deleted = 0
+```
+
+拦截器会根据当前用户数据权限自动追加条件：
+- 本部门及下级：`AND d.id IN (1,2,3,...)`
+- 仅本部门：`AND d.dept_id = 10`
+- 仅本人：`AND u.id = 100`
+
+---
+
+**场景 2：订单列表（单表，通过创建人过滤）**
+
+```java
+@DataScope(userAlias = "o", userField = "create_user_id")
+List<Order> selectOrderList(@Param("query") OrderQuery query);
+```
+
+对应 SQL：
+```sql
+SELECT * FROM orders o WHERE o.status = 1
+```
+
+仅本人数据权限时追加：`AND o.create_user_id = 100`
+
+---
+
+**场景 3：部门列表（直接过滤部门表）**
+
+```java
+@DataScope(deptAlias = "d", deptField = "id")
+List<SysDept> selectDeptList(@Param("query") DeptQuery query);
+```
+
+对应 SQL：
+```sql
+SELECT * FROM sys_dept d WHERE d.deleted = 0
+```
+
+本部门及下级时追加：`AND d.id IN (1,2,3,...)`
+
+---
+
+### 数据权限类型
+
+| 类型 | 值 | 说明 | 生成的 SQL 条件 |
+|------|-----|------|----------------|
+| 全部数据 | 1 | 不做任何过滤 | 无 |
+| 本部门及下级 | 2 | 当前部门 + 子部门 | `dept_id IN (1,2,3,...)` |
+| 仅本部门 | 3 | 仅当前部门 | `dept_id = 10` |
+| 仅本人 | 4 | 仅当前用户 | `user_id = 100` |
+| 自定义部门 | 5 | 指定部门列表 | `dept_id IN (5,8,12,...)` |
+
+### 工作原理
+
+1. MyBatis 拦截器拦截 `Executor.query()` 方法
+2. 检测 Mapper 方法上是否有 `@DataScope` 注解
+3. 从 `SecurityContextHolder` 获取当前用户的数据权限类型
+4. 根据权限类型计算可见的部门/用户 ID
+5. 使用 JSqlParser 解析并改写 SQL，追加 WHERE 条件
+6. 执行改写后的 SQL
+
+### 注意事项
+
+- 超级管理员（User ID = 1）自动跳过数据权限过滤
+- 表别名必须与实际 SQL 中的别名一致
+- 多角色用户取最宽松的数据权限
+- 不影响业务代码，Service 层无需感知
 
 
 
