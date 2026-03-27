@@ -41,6 +41,11 @@ public class SysRole {
     private Integer status;
 
     /**
+     * 数据权限范围（1=全部 2=本部门及下级 3=仅本部门 4=仅本人 5=自定义）
+     */
+    private Integer dataScope;
+
+    /**
      * 创建者
      */
     private String createBy;

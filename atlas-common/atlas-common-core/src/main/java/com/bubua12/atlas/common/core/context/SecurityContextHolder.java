@@ -1,5 +1,7 @@
 package com.bubua12.atlas.common.core.context;
 
+import com.bubua12.atlas.common.core.model.LoginUser;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +17,7 @@ public class SecurityContextHolder {
     private static final String KEY_USER_ID = "userId";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_TOKEN = "token";
+    private static final String KEY_LOGIN_USER = "loginUser";
 
     public static void setUserId(Long userId) {
         CONTEXT.get().put(KEY_USER_ID, userId);
@@ -38,6 +41,14 @@ public class SecurityContextHolder {
 
     public static String getToken() {
         return (String) CONTEXT.get().get(KEY_TOKEN);
+    }
+
+    public static void setLoginUser(LoginUser loginUser) {
+        CONTEXT.get().put(KEY_LOGIN_USER, loginUser);
+    }
+
+    public static LoginUser getLoginUser() {
+        return (LoginUser) CONTEXT.get().get(KEY_LOGIN_USER);
     }
 
     public static void clear() {
