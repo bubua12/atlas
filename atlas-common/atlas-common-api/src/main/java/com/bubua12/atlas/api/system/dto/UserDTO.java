@@ -53,4 +53,9 @@ public class UserDTO implements Serializable {
      * 权限标识集合
      */
     private Set<String> permissions;
+
+    /**
+     * 数据权限范围（1=全部 2=本部门及下级 3=仅本部门 4=仅本人 5=自定义）
+     */
+    private Integer dataScope;
 }

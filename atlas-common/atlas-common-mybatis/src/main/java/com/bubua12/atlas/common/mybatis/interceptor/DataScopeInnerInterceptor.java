@@ -1,6 +1,7 @@
 package com.bubua12.atlas.common.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
+import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import com.bubua12.atlas.common.core.context.SecurityContextHolder;
 import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.mybatis.annotation.DataScope;
@@ -17,56 +18,44 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.plugin.Interceptor;
-import org.apache.ibatis.plugin.Intercepts;
-import org.apache.ibatis.plugin.Invocation;
-import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 
 /**
- * 数据权限拦截器
- * @deprecated
- * @see DataScopeInnerInterceptor
+ * 数据权限拦截器 (InnerInterceptor 实现)
+ * 作为 MyBatis-Plus 的内部拦截器，确保在分页插件之前执行
  */
 @Slf4j
 @RequiredArgsConstructor
-@Intercepts({
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
-})
-public class DataScopeInterceptor implements Interceptor {
+public class DataScopeInnerInterceptor implements InnerInterceptor {
 
     private final DataScopeHandler dataScopeHandler;
 
     @Override
-    public Object intercept(Invocation invocation) throws Throwable {
-        MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
-        Object parameter = invocation.getArgs()[1];
-
+    public void beforeQuery(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
         // 获取 Mapper 方法上的 @DataScope 注解
         DataScope dataScope = getDataScopeAnnotation(ms);
         if (dataScope == null) {
-            return invocation.proceed();
+            return;
         }
 
         // 获取当前用户
         LoginUser loginUser = SecurityContextHolder.getLoginUser();
         if (loginUser == null) {
-            return invocation.proceed();
+            return;
         }
 
         // 生成数据权限过滤条件
         String condition = dataScopeHandler.buildDataScopeCondition(dataScope, loginUser);
         log.info("生成数据权限过滤条件：{}", condition);
         if (condition == null || condition.isEmpty()) {
-            return invocation.proceed();
+            return;
         }
 
         // 改写 SQL
-        BoundSql boundSql = ms.getBoundSql(parameter);
         String originalSql = boundSql.getSql();
         String newSql = rewriteSql(originalSql, condition);
         log.info("替换的SQL: {}", newSql);
@@ -74,8 +63,6 @@ public class DataScopeInterceptor implements Interceptor {
         // 替换 SQL
         PluginUtils.MPBoundSql mpBoundSql = PluginUtils.mpBoundSql(boundSql);
         mpBoundSql.sql(newSql);
-
-        return invocation.proceed();
     }
 
     /**
