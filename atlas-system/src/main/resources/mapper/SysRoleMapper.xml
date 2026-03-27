@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bubua12.atlas.system.mapper.SysRoleMapper">
+
+    <delete id="deleteRoleDepts">
+        DELETE FROM sys_role_dept WHERE role_id = #{roleId}
+    </delete>
+
+    <insert id="insertRoleDepts">
+        INSERT INTO sys_role_dept (role_id, dept_id) VALUES
+        <foreach collection="deptIds" item="deptId" separator=",">
+            (#{roleId}, #{deptId})
+        </foreach>
+    </insert>
+
+</mapper>

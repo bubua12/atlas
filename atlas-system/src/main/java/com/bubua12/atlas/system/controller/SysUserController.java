@@ -7,6 +7,7 @@ import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.common.security.annotation.RequiresPermission;
 import com.bubua12.atlas.system.converter.SysUserConverter;
+import com.bubua12.atlas.system.dto.AssignRolesRequest;
 import com.bubua12.atlas.system.entity.SysUser;
 import com.bubua12.atlas.system.service.SysMenuService;
 import com.bubua12.atlas.system.service.SysUserService;
@@ -153,10 +154,28 @@ public class SysUserController {
     }
 
     @PostMapping("/verify-password")
-    public CommonResult<Boolean> verifyPassword(@RequestParam("username") String username,
-                                                @RequestParam("password") String password) {
+    public CommonResult<Boolean> verifyPassword(@RequestParam("username") String username, @RequestParam("password") String password) {
         boolean valid = sysUserService.verifyPassword(username, password);
         return CommonResult.success(valid);
+    }
+
+    /**
+     * 给用户分配角色
+     */
+    @RequiresPermission("system:user:edit")
+    @PutMapping("/roles")
+    public CommonResult<Void> assignRoles(@RequestBody AssignRolesRequest request) {
+        sysUserService.assignRoles(request.getUserId(), request.getRoleIds());
+        return CommonResult.success();
+    }
+
+    /**
+     * 获取用户的角色ID列表
+     */
+    @RequiresPermission("system:user:query")
+    @GetMapping("/{userId}/roles")
+    public CommonResult<List<Long>> getUserRoleIds(@PathVariable Long userId) {
+        return CommonResult.success(sysUserService.getUserRoleIds(userId));
     }
 
     private UserDTO convertToUserDTO(SysUser user) {
@@ -168,6 +187,10 @@ public class SysUserController {
         dto.setPhone(user.getPhone());
         dto.setStatus(user.getStatus());
         dto.setDeptId(user.getDeptId());
+
+        // 查询并设置数据权限
+        Integer dataScope = sysUserService.getUserDataScope(user.getUserId());
+        dto.setDataScope(dataScope != null ? dataScope : 4);
 
         // 查询并设置权限
         List<String> perms = sysMenuService.getPermsByUserId(user.getUserId());
