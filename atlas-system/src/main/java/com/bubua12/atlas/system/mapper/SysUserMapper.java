@@ -8,6 +8,8 @@ import com.bubua12.atlas.system.entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 用户表 Mapper
  */
@@ -19,4 +21,12 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
      */
     @DataScope(deptAlias = "u", userAlias = "u")
     IPage<SysUser> pageUser(Page<SysUser> page, @Param("username") String username);
+
+    void deleteUserRoles(@Param("userId") Long userId);
+
+    void insertUserRoles(@Param("userId") Long userId, @Param("roleIds") List<Long> roleIds);
+
+    List<Long> selectRoleIdsByUserId(@Param("userId") Long userId);
+
+    Integer selectUserDataScope(@Param("userId") Long userId);
 }

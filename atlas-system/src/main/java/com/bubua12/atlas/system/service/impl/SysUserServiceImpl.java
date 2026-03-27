@@ -10,6 +10,9 @@ import com.bubua12.atlas.system.mapper.SysUserMapper;
 import com.bubua12.atlas.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * 用户管理服务实现
@@ -80,5 +83,24 @@ public class SysUserServiceImpl implements SysUserService {
             return false;
         }
         return PasswordUtils.matches(rawPassword, user.getPassword());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void assignRoles(Long userId, List<Long> roleIds) {
+        sysUserMapper.deleteUserRoles(userId);
+        if (roleIds != null && !roleIds.isEmpty()) {
+            sysUserMapper.insertUserRoles(userId, roleIds);
+        }
+    }
+
+    @Override
+    public List<Long> getUserRoleIds(Long userId) {
+        return sysUserMapper.selectRoleIdsByUserId(userId);
+    }
+
+    @Override
+    public Integer getUserDataScope(Long userId) {
+        return sysUserMapper.selectUserDataScope(userId);
     }
 }
