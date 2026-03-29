@@ -7,8 +7,8 @@ import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.common.security.annotation.RequiresPermission;
 import com.bubua12.atlas.system.converter.SysUserConverter;
-import com.bubua12.atlas.system.dto.AssignRolesRequest;
-import com.bubua12.atlas.system.entity.SysUser;
+import com.bubua12.atlas.system.entity.request.AssignRolesRequest;
+import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.service.SysMenuService;
 import com.bubua12.atlas.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
@@ -121,6 +121,9 @@ public class SysUserController {
 
     /**
      * 适用于OAuth2场景下首次创建用户
+     *
+     * @param sysUserDTO 用户信息
+     * @return 执行结果
      */
     @PostMapping("/oauth2/createUser")
     public CommonResult<Void> createUserOAuth2(@RequestBody SysUserDTO sysUserDTO) {
@@ -131,7 +134,12 @@ public class SysUserController {
         return CommonResult.success();
     }
 
-
+    /**
+     * 根据用户名查询用户信息。
+     *
+     * @param username 用户名
+     * @return 用户信息
+     */
     @GetMapping("/info/{username}")
     public CommonResult<UserDTO> getUserByUsername(@PathVariable String username) {
         SysUser user = sysUserService.getByUsername(username);
@@ -142,7 +150,12 @@ public class SysUserController {
         return CommonResult.success(dto);
     }
 
-
+    /**
+     * 根据 OpenId 查询用户信息。
+     *
+     * @param openId 第三方平台唯一标识
+     * @return 用户信息
+     */
     @GetMapping("/openid/{openId}")
     public CommonResult<UserDTO> getUserByOpenId(@PathVariable String openId) {
         SysUser user = sysUserService.getByOpenId(openId);
@@ -153,6 +166,13 @@ public class SysUserController {
         return CommonResult.success(dto);
     }
 
+    /**
+     * 校验用户密码是否正确。
+     *
+     * @param username 用户名
+     * @param password 明文密码
+     * @return true 表示密码正确
+     */
     @PostMapping("/verify-password")
     public CommonResult<Boolean> verifyPassword(@RequestParam("username") String username, @RequestParam("password") String password) {
         boolean valid = sysUserService.verifyPassword(username, password);
@@ -178,6 +198,12 @@ public class SysUserController {
         return CommonResult.success(sysUserService.getUserRoleIds(userId));
     }
 
+    /**
+     * 将系统用户转换为远程调用用户DTO。
+     *
+     * @param user 系统用户
+     * @return 用户DTO
+     */
     private UserDTO convertToUserDTO(SysUser user) {
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());

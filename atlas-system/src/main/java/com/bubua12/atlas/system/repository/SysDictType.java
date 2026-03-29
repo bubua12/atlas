@@ -1,4 +1,4 @@
-package com.bubua12.atlas.system.entity;
+package com.bubua12.atlas.system.repository;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -7,35 +7,25 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 字典数据实体
+ * 字典类型实体
  */
 @Data
-@TableName("sys_dict_data")
-public class SysDictData {
+@TableName("sys_dict_type")
+public class SysDictType {
 
     /**
-     * 字典编码
+     * 字典ID
      */
     @TableId
-    private Long dictCode;
+    private Long dictId;
 
     /**
-     * 字典排序
+     * 字典名称
      */
-    private Integer dictSort;
+    private String dictName;
 
     /**
-     * 字典标签
-     */
-    private String dictLabel;
-
-    /**
-     * 字典键值
-     */
-    private String dictValue;
-
-    /**
-     * 所属字典类型
+     * 字典类型（唯一标识，如 sys_user_sex）
      */
     private String dictType;
 

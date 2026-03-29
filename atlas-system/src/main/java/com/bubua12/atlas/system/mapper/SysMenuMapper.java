@@ -1,7 +1,7 @@
 package com.bubua12.atlas.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.bubua12.atlas.system.entity.SysMenu;
+import com.bubua12.atlas.system.repository.SysMenu;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -15,6 +15,9 @@ public interface SysMenuMapper extends BaseMapper<SysMenu> {
 
     /**
      * 根据用户ID查询权限标识
+     *
+     * @param userId 用户ID
+     * @return 权限标识列表
      */
     @Select("SELECT DISTINCT m.perms FROM sys_menu m " +
             "LEFT JOIN sys_role_menu rm ON m.menu_id = rm.menu_id " +

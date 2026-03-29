@@ -1,7 +1,7 @@
 package com.bubua12.atlas.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.bubua12.atlas.system.entity.SysConfig;
+import com.bubua12.atlas.system.repository.SysConfig;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
