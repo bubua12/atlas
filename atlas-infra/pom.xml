@@ -28,7 +28,7 @@
         </dependency>
         <dependency>
             <groupId>com.bubua12.atlas</groupId>
-            <artifactId>atlas-common-mybatis</artifactId>
+            <artifactId>atlas-common-database</artifactId>
         </dependency>
         <dependency>
             <groupId>com.bubua12.atlas</groupId>

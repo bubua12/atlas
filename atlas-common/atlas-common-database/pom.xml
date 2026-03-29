@@ -10,10 +10,10 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>atlas-common-mybatis</artifactId>
+    <artifactId>atlas-common-database</artifactId>
 
-    <name>atlas-common-mybatis</name>
-    <description>Atlas Common MyBatis - MyBatis-Plus and data source configuration</description>
+    <name>atlas-common-database</name>
+    <description>Atlas Common Database - mybatis and data source configuration</description>
 
     <dependencies>
         <dependency>
@@ -42,13 +42,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

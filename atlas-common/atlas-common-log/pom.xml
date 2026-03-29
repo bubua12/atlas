@@ -34,7 +34,7 @@
         <!-- atlas common mybatis 操作日志持久入库 -->
         <dependency>
             <groupId>com.bubua12.atlas</groupId>
-            <artifactId>atlas-common-mybatis</artifactId>
+            <artifactId>atlas-common-database</artifactId>
         </dependency>
 
         <!-- atlas common web 获取请求信息和IP地址 -->

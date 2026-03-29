@@ -20,7 +20,7 @@
         <module>atlas-common-core</module>
         <module>atlas-common-web</module>
         <module>atlas-common-redis</module>
-        <module>atlas-common-mybatis</module>
+        <module>atlas-common-database</module>
         <module>atlas-common-security</module>
         <module>atlas-common-log</module>
         <module>atlas-common-api</module>
