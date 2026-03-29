@@ -29,7 +29,7 @@ public class AtlasDataBaseAutoConfiguration {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         // 数据权限拦截器（必须在分页拦截器之前）
         interceptor.addInnerInterceptor(new DataScopeInnerInterceptor(dataScopeHandler()));
-        // 分页拦截器
+        // 分页拦截器 fixme 这里分页拦截器必须要在最后 因为分页插件需要基于最终的、完整的 SQL 语句来拼接 LIMIT 条件
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
     }

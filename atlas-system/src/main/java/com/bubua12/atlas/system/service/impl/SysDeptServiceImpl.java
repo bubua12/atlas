@@ -1,7 +1,7 @@
 package com.bubua12.atlas.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.bubua12.atlas.system.entity.SysDept;
+import com.bubua12.atlas.system.repository.SysDept;
 import com.bubua12.atlas.system.mapper.SysDeptMapper;
 import com.bubua12.atlas.system.service.SysDeptService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,11 @@ public class SysDeptServiceImpl implements SysDeptService {
 
     private final SysDeptMapper sysDeptMapper;
 
+    /**
+     * 查询部门树。
+     *
+     * @return 部门树列表
+     */
     @Override
     public List<SysDept> listTree() {
         LambdaQueryWrapper<SysDept> wrapper = new LambdaQueryWrapper<>();
@@ -32,21 +37,42 @@ public class SysDeptServiceImpl implements SysDeptService {
         return all.stream().filter(d -> d.getParentId() == 0L).collect(Collectors.toList());
     }
 
+    /**
+     * 根据部门ID查询详情。
+     *
+     * @param deptId 部门ID
+     * @return 部门信息
+     */
     @Override
     public SysDept getById(Long deptId) {
         return sysDeptMapper.selectById(deptId);
     }
 
+    /**
+     * 新增部门。
+     *
+     * @param dept 部门信息
+     */
     @Override
     public void create(SysDept dept) {
         sysDeptMapper.insert(dept);
     }
 
+    /**
+     * 更新部门。
+     *
+     * @param dept 部门信息
+     */
     @Override
     public void update(SysDept dept) {
         sysDeptMapper.updateById(dept);
     }
 
+    /**
+     * 删除部门。
+     *
+     * @param deptId 部门ID
+     */
     @Override
     public void delete(Long deptId) {
         sysDeptMapper.deleteById(deptId);

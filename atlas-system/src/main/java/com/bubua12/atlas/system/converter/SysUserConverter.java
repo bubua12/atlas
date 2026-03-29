@@ -2,7 +2,7 @@ package com.bubua12.atlas.system.converter;
 
 import com.bubua12.atlas.api.system.dto.SysUserDTO;
 import com.bubua12.atlas.common.core.converter.BaseConverter;
-import com.bubua12.atlas.system.entity.SysUser;
+import com.bubua12.atlas.system.repository.SysUser;
 import org.mapstruct.Mapper;
 
 /**

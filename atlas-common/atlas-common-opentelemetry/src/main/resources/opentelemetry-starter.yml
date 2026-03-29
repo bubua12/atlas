@@ -1,7 +1,7 @@
 bubua12:
   trace:
     starter:
-      enabled: true
+      enabled: false
       feign-metrics: true
       logging-mdc: true
       redis-tracing: true

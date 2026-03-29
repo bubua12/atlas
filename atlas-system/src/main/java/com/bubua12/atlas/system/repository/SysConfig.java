@@ -1,4 +1,4 @@
-package com.bubua12.atlas.system.entity;
+package com.bubua12.atlas.system.repository;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
