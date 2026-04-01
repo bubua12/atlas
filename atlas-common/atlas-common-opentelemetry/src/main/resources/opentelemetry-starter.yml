@@ -1,7 +1,7 @@
 bubua12:
   trace:
     starter:
-      enabled: false
+      enabled: ${OTEL_ENABLE:false}
       feign-metrics: true
       logging-mdc: true
       redis-tracing: true

@@ -183,6 +183,11 @@
                 <artifactId>atlas-common-opentelemetry</artifactId>
                 <version>${atlas.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.bubua12.atlas</groupId>
+                <artifactId>atlas-common-prometheus</artifactId>
+                <version>${atlas.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

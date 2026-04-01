@@ -32,6 +32,11 @@
             <artifactId>atlas-common-opentelemetry</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-prometheus</artifactId>
+        </dependency>
+
         <!-- Spring Cloud Gateway (WebFlux-based) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

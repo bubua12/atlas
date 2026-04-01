@@ -42,6 +42,10 @@
             <groupId>com.bubua12.atlas</groupId>
             <artifactId>atlas-common-opentelemetry</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-prometheus</artifactId>
+        </dependency>
 
         <!-- Spring Cloud Alibaba Nacos -->
         <dependency>

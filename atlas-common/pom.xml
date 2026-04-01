@@ -26,6 +26,7 @@
         <module>atlas-common-api</module>
         <module>atlas-common-concurrent</module>
         <module>atlas-common-opentelemetry</module>
+        <module>atlas-common-prometheus</module>
     </modules>
 
 </project>

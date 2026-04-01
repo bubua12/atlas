@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+com.bubua12.atlas.common.prometheus.config.PrometheusEnvironmentPostProcessor
