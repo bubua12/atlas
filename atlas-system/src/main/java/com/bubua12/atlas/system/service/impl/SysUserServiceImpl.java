@@ -82,7 +82,10 @@ public class SysUserServiceImpl implements SysUserService {
      */
     @Override
     public void update(SysUser user) {
-        user.setPassword(PasswordUtils.encode(user.getPassword()));
+        // 只有当密码字段不为空且不是已加密格式时才加密
+        if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+            user.setPassword(PasswordUtils.encode(user.getPassword()));
+        }
         sysUserMapper.updateById(user);
     }
 
