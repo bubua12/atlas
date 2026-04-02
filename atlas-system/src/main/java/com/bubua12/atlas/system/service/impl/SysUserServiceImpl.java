@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.utils.PasswordUtils;
+import com.bubua12.atlas.common.log.annotation.OperLog;
 import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.mapper.SysUserMapper;
 import com.bubua12.atlas.system.service.SysUserService;
@@ -81,6 +82,7 @@ public class SysUserServiceImpl implements SysUserService {
      * @param user 用户信息
      */
     @Override
+    @OperLog(title = "修改用户", businessType = "修改")
     public void update(SysUser user) {
         // 只有当密码字段不为空且不是已加密格式时才加密
         if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
