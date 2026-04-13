@@ -2,7 +2,6 @@ package com.bubua12.atlas.common.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
-import com.bubua12.atlas.common.core.context.SecurityContextHolder;
 import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.mybatis.annotation.DataScope;
 import com.bubua12.atlas.common.mybatis.handler.DataScopeHandler;
@@ -20,6 +19,8 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -42,8 +43,12 @@ public class DataScopeInnerInterceptor implements InnerInterceptor {
             return;
         }
 
-        // 获取当前用户
-        LoginUser loginUser = SecurityContextHolder.getLoginUser();
+        // 获取当前用户（由网关通过请求头传递，存储在请求属性中）
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) {
+            return;
+        }
+        LoginUser loginUser = (LoginUser) attrs.getRequest().getAttribute("loginUser");
         if (loginUser == null) {
             return;
         }
@@ -106,7 +111,8 @@ public class DataScopeInnerInterceptor implements InnerInterceptor {
                 return select.toString();
             }
         } catch (JSQLParserException e) {
-            log.error("SQL 解析失败，使用原始 SQL: {}", e.getMessage());
+            log.error("SQL 解析失败，拒绝执行以保证数据权限: {}", originalSql, e);
+            throw new RuntimeException("数据权限 SQL 改写失败，请联系管理员");
         }
         return originalSql;
     }

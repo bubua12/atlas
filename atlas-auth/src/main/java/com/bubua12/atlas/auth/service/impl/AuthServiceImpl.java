@@ -52,6 +52,18 @@ public class AuthServiceImpl implements AuthService {
     private long expiration;
 
     /**
+     * 获取随机化的过期时间，防止缓存雪崩
+     * 基础 TTL ± 10% 随机偏移
+     *
+     * @return 随机化后的过期时间（秒）
+     */
+    private long getRandomizedExpiration() {
+        // 7200s ± 10% = 6480-7920s
+        double randomFactor = 0.9 + (Math.random() * 0.2);  // 0.9 - 1.1
+        return (long) (expiration * randomFactor);
+    }
+
+    /**
      * 统一登录流程：
      * 1. 检查 IP 和账号是否被锁定
      * 2. 根据 grantType 获取对应处理器完成认证
@@ -82,7 +94,9 @@ public class AuthServiceImpl implements AuthService {
 
             log.info("当前登录用户存入Redis => {}", loginUser);
 
-            redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
+            // 使用随机化的 TTL 防止缓存雪崩
+            long ttl = getRandomizedExpiration();
+            redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token, loginUser, ttl, TimeUnit.SECONDS);
 
             // 登录成功，清除失败记录
             if (clientIp != null && username != null) {
@@ -91,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 
             LoginVO loginVO = new LoginVO();
             loginVO.setToken(token);
-            loginVO.setExpiresIn(expiration);
+            loginVO.setExpiresIn(ttl);  // 返回实际过期时间
             return loginVO;
         } catch (Exception e) {
             // 登录失败，记录失败次数
@@ -112,25 +126,41 @@ public class AuthServiceImpl implements AuthService {
 
     /**
      * 刷新令牌：校验旧 token，生成新 token 并更新 Redis 缓存
+     * 优化：先生成新 Token 再删除旧 Token，避免竞态条件
      */
     @Override
     public LoginVO refreshToken(String token) {
         if (jwtUtils.isTokenExpired(token)) {
             throw new AuthException(AuthErrorCode.TOKEN_EXPIRED);
         }
+        
         Long userId = jwtUtils.getUserId(token);
         String username = jwtUtils.getUsername(token);
+        
+        // 获取旧 Token 的用户信息
         LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
-        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
-
-        String newToken = jwtUtils.generateToken(userId, username);
-        if (loginUser != null) {
-            loginUser.setToken(newToken);
-            redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + newToken, loginUser, expiration, TimeUnit.SECONDS);
+        if (loginUser == null) {
+            throw new AuthException(AuthErrorCode.TOKEN_EXPIRED);
         }
+        
+        // 先生成新 Token 并写入 Redis
+        String newToken = jwtUtils.generateToken(userId, username);
+        loginUser.setToken(newToken);
+        
+        long ttl = getRandomizedExpiration();
+        redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + newToken, 
+                         loginUser, ttl, TimeUnit.SECONDS);
+        
+        // 再删除旧 Token（即使删除失败，旧 Token 也会自然过期）
+        try {
+            redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
+        } catch (Exception e) {
+            log.warn("删除旧 Token 失败，将自然过期: {}", token, e);
+        }
+        
         LoginVO loginVO = new LoginVO();
         loginVO.setToken(newToken);
-        loginVO.setExpiresIn(expiration);
+        loginVO.setExpiresIn(ttl);
         return loginVO;
     }
 }

@@ -1,7 +1,6 @@
 package com.bubua12.atlas.common.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
-import com.bubua12.atlas.common.core.context.SecurityContextHolder;
 import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.mybatis.annotation.DataScope;
 import com.bubua12.atlas.common.mybatis.handler.DataScopeHandler;
@@ -23,6 +22,8 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 
@@ -53,7 +54,11 @@ public class DataScopeInterceptor implements Interceptor {
         }
 
         // 获取当前用户
-        LoginUser loginUser = SecurityContextHolder.getLoginUser();
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) {
+            return invocation.proceed();
+        }
+        LoginUser loginUser = (LoginUser) attrs.getRequest().getAttribute("loginUser");
         if (loginUser == null) {
             return invocation.proceed();
         }

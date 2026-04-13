@@ -1,6 +1,7 @@
 package com.bubua12.atlas.common.redis.config;
 
 import com.bubua12.atlas.common.redis.aspect.RedisLimitAspect;
+import com.bubua12.atlas.common.redis.pubsub.PermissionChangePublisher;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -16,7 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
  */
 @AutoConfiguration
 @AutoConfigureBefore(RedisAutoConfiguration.class)
-@Import({RedisConfig.class, RedisLimitAspect.class})
+@Import({RedisConfig.class, RedisLimitAspect.class, PermissionChangePublisher.class})
 public class AtlasRedisAutoConfiguration {
 
     @ConditionalOnMissingBean

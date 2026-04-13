@@ -1,9 +1,10 @@
 package com.bubua12.atlas.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.bubua12.atlas.common.redis.pubsub.PermissionChangePublisher;
+import com.bubua12.atlas.system.mapper.SysRoleMapper;
 import com.bubua12.atlas.system.repository.SysRole;
 import com.bubua12.atlas.system.repository.SysUser;
-import com.bubua12.atlas.system.mapper.SysRoleMapper;
 import com.bubua12.atlas.system.service.SysRoleService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
@@ -20,6 +21,7 @@ import java.util.List;
 public class SysRoleServiceImpl implements SysRoleService {
 
     private final SysRoleMapper sysRoleMapper;
+    private final PermissionChangePublisher permissionChangePublisher;
 
     /**
      * 查询角色列表。
@@ -88,7 +90,7 @@ public class SysRoleServiceImpl implements SysRoleService {
     /**
      * 给角色分配用户
      *
-     * @param roleId 角色ID
+     * @param roleId  角色ID
      * @param userIds 用户ID列表
      */
     @Override
@@ -116,7 +118,7 @@ public class SysRoleServiceImpl implements SysRoleService {
     /**
      * 给角色分配菜单。
      *
-     * @param roleId 角色ID
+     * @param roleId  角色ID
      * @param menuIds 菜单ID列表
      */
     @Override
@@ -128,14 +130,16 @@ public class SysRoleServiceImpl implements SysRoleService {
         if (CollectionUtils.isNotEmpty(menuIds)) {
             sysRoleMapper.insertRoleMenus(roleId, menuIds);
         }
+        // 3、通知 auth 服务清除相关 Token 缓存
+        permissionChangePublisher.publishRolePermissionChange(roleId);
     }
 
     /**
      * 更新角色数据权限。
      *
-     * @param roleId 角色ID
+     * @param roleId    角色ID
      * @param dataScope 数据权限值
-     * @param deptIds 部门ID列表
+     * @param deptIds   部门ID列表
      */
     @Override
     @Transactional(rollbackFor = Exception.class)

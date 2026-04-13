@@ -3224,10 +3224,10 @@ GATEWAY_SECRET=${K8S_SECRET_GATEWAY}
 # 多阶段构建，减小镜像体积
 FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
-COPY pom.xml .
-COPY atlas-dependencies ./atlas-dependencies
-COPY atlas-common ./atlas-common
-COPY atlas-auth ./atlas-auth
+COPY ../../pom.xml .
+COPY ../../atlas-dependencies ./atlas-dependencies
+COPY ../../atlas-common ./atlas-common
+COPY ../../atlas-auth ./atlas-auth
 RUN mvn clean package -DskipTests -pl atlas-auth -am
 
 FROM eclipse-temurin:21-jre-alpine

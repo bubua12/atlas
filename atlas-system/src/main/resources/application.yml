@@ -9,6 +9,22 @@ spring:
         server-addr: ${ATLAS_NACOS_HOST:127.0.0.1}
         username: ${ATLAS_NACOS_USERNAME:nacos}
         password: ${ATLAS_NACOS_PASSWORD:nacos}
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 3000      # 连接超时 3 秒
+            readTimeout: 5000         # 读取超时 5 秒
+            loggerLevel: basic        # 日志级别
+      compression:
+        request:
+          enabled: true
+          mime-types: application/json
+          min-request-size: 2048
+        response:
+          enabled: true
+      okhttp:
+        enabled: true                 # 使用 OkHttp 客户端（性能更好）
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${ATLAS_MYSQL_URL:jdbc:mysql://127.0.0.1:3306/atlas}
@@ -19,6 +35,14 @@ spring:
       host: ${ATLAS_REDIS_HOST:127.0.0.1}
       port: ${ATLAS_REDIS_PORT:6379}
       password: ${ATLAS_REDIS_PASSWORD:bubua12}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 20      # 最大连接数
+          max-idle: 10        # 最大空闲连接
+          min-idle: 5         # 最小空闲连接
+          max-wait: 2000ms    # 最大等待时间
+        shutdown-timeout: 100ms
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:

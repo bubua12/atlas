@@ -5,6 +5,7 @@ import com.bubua12.atlas.api.system.dto.SysUserDTO;
 import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.result.CommonResult;
+import com.bubua12.atlas.common.security.annotation.InternalApi;
 import com.bubua12.atlas.common.security.annotation.RequiresPermission;
 import com.bubua12.atlas.system.converter.SysUserConverter;
 import com.bubua12.atlas.system.entity.request.AssignRolesRequest;
@@ -59,6 +60,7 @@ public class SysUserController {
      */
     @RequiresPermission("system:user:query")
     @GetMapping("/{userId}")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<SysUser> getById(@PathVariable Long userId) {
         return CommonResult.success(sysUserService.getById(userId));
     }
@@ -110,6 +112,7 @@ public class SysUserController {
      * @return CommonResult<UserDTO>
      */
     @GetMapping("/phone/{phone}")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<UserDTO> getUserByPhone(@PathVariable String phone) {
         SysUser user = sysUserService.getByPhone(phone);
         if (user == null) {
@@ -126,6 +129,7 @@ public class SysUserController {
      * @return 执行结果
      */
     @PostMapping("/oauth2/createUser")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<Void> createUserOAuth2(@RequestBody SysUserDTO sysUserDTO) {
 
         SysUser sysUser = sysUserConverter.vo2po(sysUserDTO);
@@ -141,6 +145,7 @@ public class SysUserController {
      * @return 用户信息
      */
     @GetMapping("/info/{username}")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<UserDTO> getUserByUsername(@PathVariable String username) {
         SysUser user = sysUserService.getByUsername(username);
         if (user == null) {
@@ -156,6 +161,7 @@ public class SysUserController {
      * @param openId 第三方平台唯一标识
      * @return 用户信息
      */
+    @InternalApi(allowedServices = {"atlas-auth"})
     @GetMapping("/openid/{openId}")
     public CommonResult<UserDTO> getUserByOpenId(@PathVariable String openId) {
         SysUser user = sysUserService.getByOpenId(openId);
@@ -173,6 +179,7 @@ public class SysUserController {
      * @param password 明文密码
      * @return true 表示密码正确
      */
+    @InternalApi(allowedServices = {"atlas-auth"})
     @PostMapping("/verify-password")
     public CommonResult<Boolean> verifyPassword(@RequestParam("username") String username, @RequestParam("password") String password) {
         boolean valid = sysUserService.verifyPassword(username, password);

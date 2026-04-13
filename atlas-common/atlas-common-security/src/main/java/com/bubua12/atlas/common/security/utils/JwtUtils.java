@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.util.Map;
  * JWT 工具类
  * 负责令牌的生成、解析、校验，基于 HMAC-SHA 签名算法。
  */
+@Slf4j
 @Component
 public class JwtUtils {
 
@@ -97,6 +99,7 @@ public class JwtUtils {
     public boolean isTokenExpired(String token) {
         try {
             Claims claims = parseToken(token);
+            log.info("解析后的数据：{}", claims);
             return claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return true;

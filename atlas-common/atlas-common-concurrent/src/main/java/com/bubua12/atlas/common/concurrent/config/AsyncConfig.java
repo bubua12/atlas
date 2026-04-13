@@ -1,5 +1,7 @@
 package com.bubua12.atlas.common.concurrent.config;
 
+import com.bubua12.atlas.common.core.context.SecurityContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -9,17 +11,24 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * 自定义线程池
+ * 自定义线程池配置
+ * 
+ * 优化点：
+ * 1. 配置 TaskDecorator 传递 ThreadLocal 上下文到异步线程
+ * 2. 确保异步任务可以访问用户信息
  *
  * @author bubua12
  * @since 2026/3/12 19:04
  */
+@Slf4j
 @Configuration
 @EnableAsync // 开启异步支持
 public class AsyncConfig {
 
-
-    // 定义名为 "taskExecutor" 的 Bean，Spring 会自动识别 fixme 是自动识别特定的名称嘛
+    /**
+     * 日志异步任务执行器
+     * 配置 TaskDecorator 传递用户上下文到异步线程
+     */
     @Bean("atlasLogTaskExecutor")
     public Executor executor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -34,9 +43,32 @@ public class AsyncConfig {
         executor.setThreadNamePrefix("atlas-async-log-");
         // 拒绝策略：由调用线程处理（CallerRunsPolicy），保证不丢任务
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        // fixme 上述的初始化步骤，要了解一下
+        
+        // 配置 TaskDecorator 传递 ThreadLocal 到异步线程
+        executor.setTaskDecorator(runnable -> {
+            // 捕获当前线程的用户上下文
+            SecurityContextHolder.UserContext context = SecurityContextHolder.getUserContext();
+            return () -> {
+                try {
+                    // 在异步线程中设置用户上下文
+                    if (context != null) {
+                        SecurityContextHolder.setUserContext(
+                            context.getUserId(), 
+                            context.getUsername(), 
+                            context.getToken()
+                        );
+                        log.debug("异步线程设置用户上下文: userId={}", context.getUserId());
+                    }
+                    runnable.run();
+                } finally {
+                    // 清理异步线程的 ThreadLocal
+                    SecurityContextHolder.clear();
+                    log.debug("异步线程清理用户上下文");
+                }
+            };
+        });
+        
         executor.initialize();
-
         return executor;
     }
 }

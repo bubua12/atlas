@@ -12,6 +12,6 @@ import org.springframework.context.annotation.Import;
  * @since 2026/3/4 15:01
  */
 @AutoConfiguration
-@Import({WebMvcConfig.class, GlobalExceptionHandler.class, UserConfigurations.class})
+@Import({WebMvcConfig.class, GlobalExceptionHandler.class, UserConfigurations.class, FeignServiceNameInterceptor.class})
 public class AtlasWebAutoConfiguration {
 }
