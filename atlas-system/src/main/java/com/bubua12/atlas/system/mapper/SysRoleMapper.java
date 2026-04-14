@@ -25,6 +25,20 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
     List<SysUser> selectUsersByRoleId(@Param("roleId") Long roleId);
 
     /**
+     * 获取角色下绑定的用户ID列表。
+     */
+    @Select("SELECT DISTINCT ur.user_id FROM sys_user_role ur WHERE ur.role_id = #{roleId}")
+    List<Long> selectUserIdsByRoleId(@Param("roleId") Long roleId);
+
+    /**
+     * 获取绑定了指定菜单的用户ID列表。
+     */
+    @Select("SELECT DISTINCT ur.user_id FROM sys_user_role ur " +
+            "INNER JOIN sys_role_menu rm ON ur.role_id = rm.role_id " +
+            "WHERE rm.menu_id = #{menuId}")
+    List<Long> selectUserIdsByMenuId(@Param("menuId") Long menuId);
+
+    /**
      * 删除角色与用户的绑定关系。
      *
      * @param roleId 角色ID

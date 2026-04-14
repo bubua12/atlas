@@ -40,3 +40,8 @@ spring:
             - Path=/monitor/**
           filters:
             - StripPrefix=1
+atlas:
+  security:
+    request-signature:
+      secret: ${ATLAS_REQUEST_SIGNATURE_SECRET:atlas-request-signature-secret-change-me}
+      allowed-clock-skew-millis: ${ATLAS_REQUEST_SIGNATURE_ALLOWED_SKEW_MILLIS:300000}

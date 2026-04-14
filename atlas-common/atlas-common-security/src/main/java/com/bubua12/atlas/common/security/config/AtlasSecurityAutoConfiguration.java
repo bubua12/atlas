@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Import;
  * @since 2026/3/4 15:04
  */
 @AutoConfiguration
-@Import(PreAuthorizeAspectConfiguration.class)
+@Import({PreAuthorizeAspectConfiguration.class, InternalApiAspectConfiguration.class})
 public class AtlasSecurityAutoConfiguration {
 
     @Bean

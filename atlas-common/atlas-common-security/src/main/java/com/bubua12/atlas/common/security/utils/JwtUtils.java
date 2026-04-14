@@ -1,6 +1,7 @@
 package com.bubua12.atlas.common.security.utils;
 
 import com.bubua12.atlas.common.redis.service.RedisService;
+import com.bubua12.atlas.common.core.utils.TokenUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -68,10 +69,15 @@ public class JwtUtils {
      * 解析 JWT 令牌，返回 Claims
      */
     public Claims parseToken(String token) {
+        String rawToken = TokenUtils.resolveToken(token);
+        if (rawToken == null) {
+            throw new IllegalArgumentException("Token is blank");
+        }
+
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
-                .parseSignedClaims(token)
+                .parseSignedClaims(rawToken)
                 .getPayload();
     }
 
@@ -107,9 +113,10 @@ public class JwtUtils {
      * 校验 token 是否有效（未过期且在 Redis 中存在）
      */
     public boolean isTokenValid(String token) {
-        if (isTokenExpired(token)) {
+        String rawToken = TokenUtils.resolveToken(token);
+        if (rawToken == null || isTokenExpired(rawToken)) {
             return false;
         }
-        return Boolean.TRUE.equals(redisService.hasKey(TOKEN_CACHE_PREFIX + token));
+        return Boolean.TRUE.equals(redisService.hasKey(TOKEN_CACHE_PREFIX + rawToken));
     }
 }

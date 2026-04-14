@@ -12,6 +12,7 @@ import com.bubua12.atlas.auth.service.LoginFailRecordService;
 import com.bubua12.atlas.auth.utils.AuthUtils;
 import com.bubua12.atlas.auth.entity.vo.LoginVO;
 import com.bubua12.atlas.common.core.model.LoginUser;
+import com.bubua12.atlas.common.core.utils.TokenUtils;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
 import jakarta.annotation.Resource;
@@ -19,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -80,9 +83,10 @@ public class AuthServiceImpl implements AuthService {
             loginUser.setToken(token);
             loginUser.setClientIp(clientIp);
 
-            log.info("当前登录用户存入Redis => {}", loginUser);
+            log.info("当前登录用户存入Redis, userId={}, username={}", loginUser.getUserId(), loginUser.getUsername());
 
-            redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token, loginUser, expiration, TimeUnit.SECONDS);
+            long ttl = resolveSessionTtlSeconds();
+            saveLoginSession(loginUser, token, ttl);
 
             // 登录成功，清除失败记录
             if (clientIp != null && username != null) {
@@ -91,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
 
             LoginVO loginVO = new LoginVO();
             loginVO.setToken(token);
-            loginVO.setExpiresIn(expiration);
+            loginVO.setExpiresIn(ttl);
             return loginVO;
         } catch (Exception e) {
             // 登录失败，记录失败次数
@@ -107,7 +111,15 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(String token) {
-        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
+        String rawToken = TokenUtils.resolveToken(token);
+        if (rawToken != null) {
+            LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
+            if (loginUser != null) {
+                removeLoginSession(loginUser.getUserId(), rawToken);
+            } else {
+                redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
+            }
+        }
     }
 
     /**
@@ -115,22 +127,54 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public LoginVO refreshToken(String token) {
-        if (jwtUtils.isTokenExpired(token)) {
+        String rawToken = TokenUtils.resolveToken(token);
+        if (rawToken == null || jwtUtils.isTokenExpired(rawToken)) {
             throw new AuthException(AuthErrorCode.TOKEN_EXPIRED);
         }
-        Long userId = jwtUtils.getUserId(token);
-        String username = jwtUtils.getUsername(token);
-        LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
-        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
+        Long userId = jwtUtils.getUserId(rawToken);
+        String username = jwtUtils.getUsername(rawToken);
+        LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
+        if (loginUser == null) {
+            throw new AuthException(AuthErrorCode.TOKEN_EXPIRED);
+        }
 
         String newToken = jwtUtils.generateToken(userId, username);
-        if (loginUser != null) {
-            loginUser.setToken(newToken);
-            redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + newToken, loginUser, expiration, TimeUnit.SECONDS);
-        }
+        loginUser.setToken(newToken);
+        long ttl = resolveSessionTtlSeconds();
+        saveLoginSession(loginUser, newToken, ttl);
+        removeLoginSession(userId, rawToken);
         LoginVO loginVO = new LoginVO();
         loginVO.setToken(newToken);
-        loginVO.setExpiresIn(expiration);
+        loginVO.setExpiresIn(ttl);
         return loginVO;
+    }
+
+    private void saveLoginSession(LoginUser loginUser, String token, long ttl) {
+        redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token, loginUser, ttl, TimeUnit.SECONDS);
+
+        String userTokenIndexKey = AuthCacheConstant.AUTH_USER_TOKEN_SET_PREFIX + loginUser.getUserId();
+        redisService.addToSet(userTokenIndexKey, token);
+
+        Long currentIndexTtl = redisService.getExpire(userTokenIndexKey, TimeUnit.SECONDS);
+        if (currentIndexTtl == null || currentIndexTtl < ttl) {
+            redisService.expire(userTokenIndexKey, ttl, TimeUnit.SECONDS);
+        }
+    }
+
+    private void removeLoginSession(Long userId, String token) {
+        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
+        String userTokenIndexKey = AuthCacheConstant.AUTH_USER_TOKEN_SET_PREFIX + userId;
+        redisService.removeFromSet(userTokenIndexKey, token);
+        Set<Object> remainTokens = redisService.members(userTokenIndexKey);
+        if (remainTokens == null || remainTokens.isEmpty()) {
+            redisService.delete(userTokenIndexKey);
+        }
+    }
+
+    private long resolveSessionTtlSeconds() {
+        long jitterWindow = Math.max(1L, Math.round(expiration * 0.1));
+        long lowerBound = expiration - jitterWindow / 2;
+        long upperBound = expiration + jitterWindow / 2;
+        return ThreadLocalRandom.current().nextLong(Math.max(1L, lowerBound), upperBound + 1);
     }
 }

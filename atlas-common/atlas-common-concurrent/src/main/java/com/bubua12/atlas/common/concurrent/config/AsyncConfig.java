@@ -1,7 +1,9 @@
 package com.bubua12.atlas.common.concurrent.config;
 
+import com.bubua12.atlas.common.core.context.SecurityContextHolder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -18,6 +20,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync // 开启异步支持
 public class AsyncConfig {
 
+    private static final TaskDecorator SECURITY_CONTEXT_TASK_DECORATOR = runnable -> {
+        SecurityContextHolder.UserContext userContext = SecurityContextHolder.copyContext();
+        return () -> {
+            try {
+                SecurityContextHolder.setContext(userContext);
+                runnable.run();
+            } finally {
+                SecurityContextHolder.clear();
+            }
+        };
+    };
 
     // 定义名为 "taskExecutor" 的 Bean，Spring 会自动识别 fixme 是自动识别特定的名称嘛
     @Bean("atlasLogTaskExecutor")
@@ -32,6 +45,8 @@ public class AsyncConfig {
         executor.setQueueCapacity(200);
         // 线程名前缀：方便排查日志
         executor.setThreadNamePrefix("atlas-async-log-");
+        // 透传请求线程中的安全上下文到异步线程，并在执行完成后及时清理。
+        executor.setTaskDecorator(SECURITY_CONTEXT_TASK_DECORATOR);
         // 拒绝策略：由调用线程处理（CallerRunsPolicy），保证不丢任务
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         // fixme 上述的初始化步骤，要了解一下

@@ -1,6 +1,7 @@
 package com.bubua12.atlas.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.bubua12.atlas.system.security.PermissionChangePublisher;
 import com.bubua12.atlas.system.repository.SysRole;
 import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.mapper.SysRoleMapper;
@@ -10,7 +11,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 角色管理服务实现
@@ -20,6 +23,8 @@ import java.util.List;
 public class SysRoleServiceImpl implements SysRoleService {
 
     private final SysRoleMapper sysRoleMapper;
+
+    private final PermissionChangePublisher permissionChangePublisher;
 
     /**
      * 查询角色列表。
@@ -94,12 +99,17 @@ public class SysRoleServiceImpl implements SysRoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void assignUsers(Long roleId, List<Long> userIds) {
+        Set<Long> affectedUserIds = new LinkedHashSet<>(sysRoleMapper.selectUserIdsByRoleId(roleId));
+        if (CollectionUtils.isNotEmpty(userIds)) {
+            affectedUserIds.addAll(userIds);
+        }
         // 1、先根据角色ID删除旧的关系
         sysRoleMapper.deleteRoleUsers(roleId);
         // 2、绑定新的关系
         if (CollectionUtils.isNotEmpty(userIds)) {
             sysRoleMapper.insertRoleUsers(roleId, userIds);
         }
+        permissionChangePublisher.publishUsersChanged(affectedUserIds, "role-users-changed");
     }
 
     /**
@@ -128,6 +138,7 @@ public class SysRoleServiceImpl implements SysRoleService {
         if (CollectionUtils.isNotEmpty(menuIds)) {
             sysRoleMapper.insertRoleMenus(roleId, menuIds);
         }
+        permissionChangePublisher.publishUsersChanged(sysRoleMapper.selectUserIdsByRoleId(roleId), "role-menus-changed");
     }
 
     /**
@@ -149,5 +160,6 @@ public class SysRoleServiceImpl implements SysRoleService {
         if (dataScope == 5 && deptIds != null && !deptIds.isEmpty()) {
             sysRoleMapper.insertRoleDepts(roleId, deptIds);
         }
+        permissionChangePublisher.publishUsersChanged(sysRoleMapper.selectUserIdsByRoleId(roleId), "role-data-scope-changed");
     }
 }

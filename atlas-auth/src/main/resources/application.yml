@@ -9,6 +9,21 @@ spring:
         server-addr: ${ATLAS_NACOS_HOST:127.0.0.1}
         username: ${ATLAS_NACOS_USERNAME:nacos}
         password: ${ATLAS_NACOS_PASSWORD:nacos}
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 3000
+            readTimeout: 5000
+          atlas-system:
+            connectTimeout: 2000
+            readTimeout: 3000
+      compression:
+        request:
+          enabled: true
+          mime-types: application/json
+        response:
+          enabled: true
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${ATLAS_MYSQL_URL:jdbc:mysql://127.0.0.1:3306/atlas}
@@ -20,6 +35,10 @@ spring:
       port: ${ATLAS_REDIS_PORT:6379}
       password: ${ATLAS_REDIS_PASSWORD:bubua12}
 atlas:
+  security:
+    request-signature:
+      secret: ${ATLAS_REQUEST_SIGNATURE_SECRET:atlas-request-signature-secret-change-me}
+      allowed-clock-skew-millis: ${ATLAS_REQUEST_SIGNATURE_ALLOWED_SKEW_MILLIS:300000}
   wecom:
     corp-id: ww0abbbd110a1aa774
     agent-id: 1000002

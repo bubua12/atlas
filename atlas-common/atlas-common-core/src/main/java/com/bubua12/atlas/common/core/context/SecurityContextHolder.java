@@ -2,9 +2,6 @@ package com.bubua12.atlas.common.core.context;
 
 import com.bubua12.atlas.common.core.model.LoginUser;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * 安全上下文持有者
  * 基于 ThreadLocal 存储当前请求的用户信息（userId、username、token），
@@ -12,46 +9,129 @@ import java.util.Map;
  */
 public class SecurityContextHolder {
 
-    private static final ThreadLocal<Map<String, Object>> CONTEXT = ThreadLocal.withInitial(HashMap::new);
-
-    private static final String KEY_USER_ID = "userId";
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_TOKEN = "token";
-    private static final String KEY_LOGIN_USER = "loginUser";
+    private static final ThreadLocal<UserContext> CONTEXT = new ThreadLocal<>();
 
     public static void setUserId(Long userId) {
-        CONTEXT.get().put(KEY_USER_ID, userId);
+        getOrCreateContext().setUserId(userId);
     }
 
     public static Long getUserId() {
-        return (Long) CONTEXT.get().get(KEY_USER_ID);
+        UserContext userContext = CONTEXT.get();
+        return userContext == null ? null : userContext.getUserId();
     }
 
     public static void setUsername(String username) {
-        CONTEXT.get().put(KEY_USERNAME, username);
+        getOrCreateContext().setUsername(username);
     }
 
     public static String getUsername() {
-        return (String) CONTEXT.get().get(KEY_USERNAME);
+        UserContext userContext = CONTEXT.get();
+        return userContext == null ? null : userContext.getUsername();
     }
 
     public static void setToken(String token) {
-        CONTEXT.get().put(KEY_TOKEN, token);
+        getOrCreateContext().setToken(token);
     }
 
     public static String getToken() {
-        return (String) CONTEXT.get().get(KEY_TOKEN);
+        UserContext userContext = CONTEXT.get();
+        return userContext == null ? null : userContext.getToken();
     }
 
     public static void setLoginUser(LoginUser loginUser) {
-        CONTEXT.get().put(KEY_LOGIN_USER, loginUser);
+        getOrCreateContext().setLoginUser(loginUser);
     }
 
     public static LoginUser getLoginUser() {
-        return (LoginUser) CONTEXT.get().get(KEY_LOGIN_USER);
+        UserContext userContext = CONTEXT.get();
+        return userContext == null ? null : userContext.getLoginUser();
     }
 
     public static void clear() {
         CONTEXT.remove();
+    }
+
+    public static UserContext getContext() {
+        return CONTEXT.get();
+    }
+
+    public static UserContext copyContext() {
+        UserContext userContext = CONTEXT.get();
+        return copyOf(userContext);
+    }
+
+    public static void setContext(UserContext userContext) {
+        if (userContext == null) {
+            clear();
+            return;
+        }
+        CONTEXT.set(copyOf(userContext));
+    }
+
+    private static UserContext getOrCreateContext() {
+        UserContext userContext = CONTEXT.get();
+        if (userContext == null) {
+            userContext = new UserContext();
+            CONTEXT.set(userContext);
+        }
+        return userContext;
+    }
+
+    private static UserContext copyOf(UserContext source) {
+        if (source == null) {
+            return null;
+        }
+        UserContext target = new UserContext();
+        target.setUserId(source.getUserId());
+        target.setUsername(source.getUsername());
+        target.setToken(source.getToken());
+        target.setLoginUser(source.getLoginUser());
+        return target;
+    }
+
+    /**
+     * 当前请求的安全上下文。
+     */
+    public static class UserContext {
+
+        private Long userId;
+
+        private String username;
+
+        private String token;
+
+        private LoginUser loginUser;
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public LoginUser getLoginUser() {
+            return loginUser;
+        }
+
+        public void setLoginUser(LoginUser loginUser) {
+            this.loginUser = loginUser;
+        }
     }
 }

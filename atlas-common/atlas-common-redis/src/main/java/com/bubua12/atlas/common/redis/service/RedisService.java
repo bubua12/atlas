@@ -49,4 +49,21 @@ public class RedisService {
     public Long increment(String key) {
         return redisTemplate.opsForValue().increment(key);
     }
+
+    public Long getExpire(String key, TimeUnit unit) {
+        return redisTemplate.getExpire(key, unit);
+    }
+
+    public Long addToSet(String key, Object... values) {
+        return redisTemplate.opsForSet().add(key, values);
+    }
+
+    public Long removeFromSet(String key, Object... values) {
+        return redisTemplate.opsForSet().remove(key, values);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Set<T> members(String key) {
+        return (Set<T>) (Set<?>) redisTemplate.opsForSet().members(key);
+    }
 }

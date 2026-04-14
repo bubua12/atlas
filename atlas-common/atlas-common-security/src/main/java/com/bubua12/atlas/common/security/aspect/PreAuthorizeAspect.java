@@ -6,8 +6,10 @@ import com.bubua12.atlas.common.core.context.SecurityContextHolder;
 import com.bubua12.atlas.common.core.exception.BusinessErrorCode;
 import com.bubua12.atlas.common.core.exception.BusinessException;
 import com.bubua12.atlas.common.core.model.LoginUser;
+import com.bubua12.atlas.common.core.utils.TokenUtils;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.annotation.RequiresPermission;
+import com.bubua12.atlas.common.security.constant.PermissionConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -39,20 +41,19 @@ public class PreAuthorizeAspect {
 
     @Around("permissionPointCut() && @annotation(requiresPermission)")
     public Object around(ProceedingJoinPoint point, RequiresPermission requiresPermission) throws Throwable {
-        // 1. 获取当前 Token (从 SecurityContextHolder)
-        String token = SecurityContextHolder.getToken();
-        if (StrUtil.isBlank(token)) {
-            // 尝试从 UserContextInterceptor 设置的 userId 判断是否已登录，但没有 Token 无法查 Redis 缓存
-            throw new BusinessException(BusinessErrorCode.UNAUTHORIZED);
+        // 1. 优先复用网关透传并验签后的上下文，避免重复查询 Redis
+        LoginUser loginUser = SecurityContextHolder.getLoginUser();
+        if (loginUser == null) {
+            String token = TokenUtils.resolveToken(SecurityContextHolder.getToken());
+            if (StrUtil.isBlank(token)) {
+                throw new BusinessException(BusinessErrorCode.UNAUTHORIZED);
+            }
+            loginUser = redisService.get(TOKEN_CACHE_PREFIX + token);
+            if (loginUser != null) {
+                SecurityContextHolder.setLoginUser(loginUser);
+            }
         }
 
-        // 去掉 Bearer 前缀
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        // 2. 从 Redis 获取 LoginUser
-        LoginUser loginUser = redisService.get(TOKEN_CACHE_PREFIX + token);
         if (loginUser == null) {
             throw new BusinessException(BusinessErrorCode.UNAUTHORIZED);
         }
@@ -71,11 +72,39 @@ public class PreAuthorizeAspect {
 
         Set<String> userPerms = loginUser.getPermissions();
 
-        if (CollectionUtil.isEmpty(userPerms) || !userPerms.contains(requiredPerm)) {
+        if (!hasPermission(userPerms, requiredPerm)) {
             log.warn("用户 {} 权限不足，需要权限: {}，已有权限: {}", userId, requiredPerm, userPerms);
             throw new BusinessException(BusinessErrorCode.FORBIDDEN);
         }
 
         return point.proceed();
+    }
+
+    private boolean hasPermission(Set<String> userPerms, String requiredPerm) {
+        if (CollectionUtil.isEmpty(userPerms)) {
+            return false;
+        }
+        if (userPerms.contains(requiredPerm) || userPerms.contains(PermissionConstants.ALL_PERMISSION)) {
+            return true;
+        }
+        return userPerms.stream()
+                .filter(StrUtil::isNotBlank)
+                .anyMatch(permission -> matchesWildcard(permission, requiredPerm));
+    }
+
+    private boolean matchesWildcard(String ownedPermission, String requiredPermission) {
+        String[] ownedParts = StrUtil.splitToArray(ownedPermission, ':');
+        String[] requiredParts = StrUtil.splitToArray(requiredPermission, ':');
+
+        if (ownedParts.length != requiredParts.length) {
+            return false;
+        }
+
+        for (int i = 0; i < ownedParts.length; i++) {
+            if (!"*".equals(ownedParts[i]) && !StrUtil.equals(ownedParts[i], requiredParts[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

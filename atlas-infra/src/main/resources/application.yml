@@ -31,5 +31,9 @@ mybatis-plus:
     db-config:
       id-type: auto
 atlas:
+  security:
+    request-signature:
+      secret: ${ATLAS_REQUEST_SIGNATURE_SECRET:atlas-request-signature-secret-change-me}
+      allowed-clock-skew-millis: ${ATLAS_REQUEST_SIGNATURE_ALLOWED_SKEW_MILLIS:300000}
   file:
     upload-path: /data/atlas/upload

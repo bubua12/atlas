@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.utils.PasswordUtils;
 import com.bubua12.atlas.common.log.annotation.OperLog;
+import com.bubua12.atlas.system.security.PermissionChangePublisher;
 import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.mapper.SysUserMapper;
 import com.bubua12.atlas.system.service.SysUserService;
@@ -24,6 +25,8 @@ import java.util.List;
 public class SysUserServiceImpl implements SysUserService {
 
     private final SysUserMapper sysUserMapper;
+
+    private final PermissionChangePublisher permissionChangePublisher;
 
     /**
      * 分页查询用户列表，查询过程中会应用数据权限过滤。
@@ -158,6 +161,7 @@ public class SysUserServiceImpl implements SysUserService {
         if (CollectionUtils.isNotEmpty(roleIds)) {
             sysUserMapper.insertUserRoles(userId, roleIds);
         }
+        permissionChangePublisher.publishUsersChanged(List.of(userId), "user-role-changed");
     }
 
     /**

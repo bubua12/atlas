@@ -1,5 +1,6 @@
 package com.bubua12.atlas.common.core.result;
 
+import com.bubua12.atlas.common.core.exception.code.ErrorCode;
 import lombok.Data;
 
 import java.io.Serial;
@@ -48,5 +49,9 @@ public class CommonResult<T> implements Serializable {
 
     public static <T> CommonResult<T> fail(int code, String msg) {
         return new CommonResult<>(code, msg, null);
+    }
+
+    public static <T> CommonResult<T> fail(ErrorCode errorCode) {
+        return fail(errorCode.getCode(), errorCode.getMessage());
     }
 }

@@ -33,6 +33,12 @@ public interface AtlasSystemFeign {
     CommonResult<UserDTO> getUserById(@PathVariable Long userId);
 
     /**
+     * 根据用户ID查询内部用户信息（用于刷新在线会话）。
+     */
+    @GetMapping("/internal/{userId}")
+    CommonResult<UserDTO> getInternalUserById(@PathVariable Long userId);
+
+    /**
      * 根据手机号查询用户信息（验证码登录使用）
      */
     @GetMapping("/phone/{phone}")

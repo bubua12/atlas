@@ -18,6 +18,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.bubua12.atlas</groupId>
+            <artifactId>atlas-common-core</artifactId>
+        </dependency>
+
         <!-- boot starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

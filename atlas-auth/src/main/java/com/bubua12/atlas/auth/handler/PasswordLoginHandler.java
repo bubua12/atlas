@@ -1,10 +1,10 @@
 package com.bubua12.atlas.auth.handler;
 
 import com.bubua12.atlas.api.system.dto.UserDTO;
+import com.bubua12.atlas.auth.entity.request.LoginRequest;
 import com.bubua12.atlas.auth.exception.AuthErrorCode;
 import com.bubua12.atlas.auth.exception.AuthException;
 import com.bubua12.atlas.auth.feign.AtlasSystemFeign;
-import com.bubua12.atlas.auth.entity.request.LoginRequest;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
@@ -38,9 +38,12 @@ public class PasswordLoginHandler implements LoginHandler {
         );
 
         // 从用户名错误以及密码错误调整为统一提示，防止用户名枚举破解
-        if (verifyResult == null || verifyResult.getData() == null || !verifyResult.getData()) {
+        if (verifyResult.getCode() != 200) {
             throw new AuthException(AuthErrorCode.USERNAME_OR_PASSWORD_WRONG);
         }
+//        if (verifyResult == null || verifyResult.getData() == null || !verifyResult.getData()) {
+//            throw new AuthException(AuthErrorCode.USERNAME_OR_PASSWORD_WRONG);
+//        }
 
         // 密码验证通过，查询用户信息
         CommonResult<UserDTO> result = atlasSystemFeign.getUserByUsername(request.getUsername());

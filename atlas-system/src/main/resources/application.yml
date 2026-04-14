@@ -9,6 +9,18 @@ spring:
         server-addr: ${ATLAS_NACOS_HOST:127.0.0.1}
         username: ${ATLAS_NACOS_USERNAME:nacos}
         password: ${ATLAS_NACOS_PASSWORD:nacos}
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 3000
+            readTimeout: 5000
+      compression:
+        request:
+          enabled: true
+          mime-types: application/json
+        response:
+          enabled: true
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${ATLAS_MYSQL_URL:jdbc:mysql://127.0.0.1:3306/atlas}
@@ -30,6 +42,12 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+atlas:
+  security:
+    request-signature:
+      secret: ${ATLAS_REQUEST_SIGNATURE_SECRET:atlas-request-signature-secret-change-me}
+      allowed-clock-skew-millis: ${ATLAS_REQUEST_SIGNATURE_ALLOWED_SKEW_MILLIS:300000}
 
 
 knife4j:
