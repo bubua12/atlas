@@ -40,3 +40,9 @@ spring:
             - Path=/monitor/**
           filters:
             - StripPrefix=1
+atlas:
+  security:
+    gateway:
+      secret: ${ATLAS_GATEWAY_SIGNATURE_SECRET:atlas-gateway-signature-secret-change-me}
+      allowed-skew-seconds: 300
+      nonce-ttl-seconds: 300

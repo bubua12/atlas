@@ -28,8 +28,9 @@ import java.lang.reflect.Method;
 
 /**
  * 数据权限拦截器
- * @deprecated
+ *
  * @see DataScopeInnerInterceptor
+ * @deprecated
  */
 @Slf4j
 @RequiredArgsConstructor

@@ -6,8 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.utils.PasswordUtils;
 import com.bubua12.atlas.common.log.annotation.OperLog;
-import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.mapper.SysUserMapper;
+import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
@@ -130,7 +130,7 @@ public class SysUserServiceImpl implements SysUserService {
     /**
      * 校验用户密码。
      *
-     * @param username 用户名
+     * @param username    用户名
      * @param rawPassword 明文密码
      * @return true 表示密码匹配
      */
@@ -146,7 +146,7 @@ public class SysUserServiceImpl implements SysUserService {
     /**
      * 给用户分配角色
      *
-     * @param userId 用户ID
+     * @param userId  用户ID
      * @param roleIds 角色ID列表
      */
     @Override

@@ -3,7 +3,8 @@
 -- 增加 open_id 字段
 -- =============================================
 
-USE `atlas`;
+USE
+`atlas`;
 
 -- 1. 用户表增加 open_id 字段
 ALTER TABLE `sys_user`

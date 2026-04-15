@@ -1,10 +1,10 @@
 package com.bubua12.atlas.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.bubua12.atlas.system.repository.SysDictData;
-import com.bubua12.atlas.system.repository.SysDictType;
 import com.bubua12.atlas.system.mapper.SysDictDataMapper;
 import com.bubua12.atlas.system.mapper.SysDictTypeMapper;
+import com.bubua12.atlas.system.repository.SysDictData;
+import com.bubua12.atlas.system.repository.SysDictType;
 import com.bubua12.atlas.system.service.SysDictService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

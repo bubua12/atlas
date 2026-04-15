@@ -19,7 +19,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
     /**
      * 查询用户列表（带数据权限）
      *
-     * @param page 分页参数
+     * @param page     分页参数
      * @param username 用户名关键字
      * @return 用户分页结果
      */
@@ -36,7 +36,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
     /**
      * 给用户绑定角色
      *
-     * @param userId 用户ID
+     * @param userId  用户ID
      * @param roleIds 角色ID列表
      */
     void insertUserRoles(@Param("userId") Long userId, @Param("roleIds") List<Long> roleIds);

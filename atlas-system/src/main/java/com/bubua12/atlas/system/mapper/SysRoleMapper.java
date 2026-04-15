@@ -35,7 +35,7 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
     /**
      * 批量新增角色与用户绑定关系。
      *
-     * @param roleId 角色ID
+     * @param roleId  角色ID
      * @param userIds 用户ID列表
      */
     @Insert("<script>" +
@@ -66,7 +66,7 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
     /**
      * 批量新增角色与菜单绑定关系。
      *
-     * @param roleId 角色ID
+     * @param roleId  角色ID
      * @param menuIds 菜单ID列表
      */
     @Insert("<script>" +
@@ -87,7 +87,7 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
     /**
      * 批量新增角色与部门绑定关系。
      *
-     * @param roleId 角色ID
+     * @param roleId  角色ID
      * @param deptIds 部门ID列表
      */
     void insertRoleDepts(@Param("roleId") Long roleId, @Param("deptIds") List<Long> deptIds);

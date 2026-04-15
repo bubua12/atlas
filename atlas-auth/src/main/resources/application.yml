@@ -20,6 +20,16 @@ spring:
       port: ${ATLAS_REDIS_PORT:6379}
       password: ${ATLAS_REDIS_PASSWORD:bubua12}
 atlas:
+  security:
+    gateway:
+      secret: ${ATLAS_GATEWAY_SIGNATURE_SECRET:atlas-gateway-signature-secret-change-me}
+      allowed-skew-seconds: 300
+      nonce-ttl-seconds: 300
+    internal:
+      service-name: ${spring.application.name}
+      current-secret: ${ATLAS_AUTH_INTERNAL_SECRET:atlas-auth-internal-secret-change-me}
+      allowed-skew-seconds: 300
+      nonce-ttl-seconds: 300
   wecom:
     corp-id: ww0abbbd110a1aa774
     agent-id: 1000002

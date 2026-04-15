@@ -1,8 +1,8 @@
 package com.bubua12.atlas.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.bubua12.atlas.system.repository.SysConfig;
 import com.bubua12.atlas.system.mapper.SysConfigMapper;
+import com.bubua12.atlas.system.repository.SysConfig;
 import com.bubua12.atlas.system.service.SysConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,7 +48,7 @@ public class SysConfigServiceImpl implements SysConfigService {
     /**
      * 更新配置值。
      *
-     * @param configKey 配置键
+     * @param configKey   配置键
      * @param configValue 配置值
      */
     @Override

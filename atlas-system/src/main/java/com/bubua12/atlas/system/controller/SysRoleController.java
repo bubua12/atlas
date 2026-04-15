@@ -2,8 +2,8 @@ package com.bubua12.atlas.system.controller;
 
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.system.entity.request.AssignMenusRequest;
-import com.bubua12.atlas.system.entity.request.UpdateDataScopeRequest;
 import com.bubua12.atlas.system.entity.request.AssignUsersRequest;
+import com.bubua12.atlas.system.entity.request.UpdateDataScopeRequest;
 import com.bubua12.atlas.system.repository.SysRole;
 import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.service.SysRoleService;

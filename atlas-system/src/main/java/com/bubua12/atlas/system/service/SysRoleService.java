@@ -57,7 +57,7 @@ public interface SysRoleService {
     /**
      * 给角色分配用户
      *
-     * @param roleId 角色ID
+     * @param roleId  角色ID
      * @param userIds 用户ID列表
      */
     void assignUsers(Long roleId, List<Long> userIds);
@@ -73,7 +73,7 @@ public interface SysRoleService {
     /**
      * 给角色分配菜单
      *
-     * @param roleId 角色ID
+     * @param roleId  角色ID
      * @param menuIds 菜单ID列表
      */
     void assignMenus(Long roleId, List<Long> menuIds);
@@ -81,9 +81,9 @@ public interface SysRoleService {
     /**
      * 更新角色数据权限
      *
-     * @param roleId 角色ID
+     * @param roleId    角色ID
      * @param dataScope 数据权限值
-     * @param deptIds 部门ID列表
+     * @param deptIds   部门ID列表
      */
     void updateDataScope(Long roleId, Integer dataScope, List<Long> deptIds);
 }

@@ -49,4 +49,8 @@ public class RedisService {
     public Long increment(String key) {
         return redisTemplate.opsForValue().increment(key);
     }
+
+    public Boolean setIfAbsent(String key, Object value, long timeout, TimeUnit unit) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit);
+    }
 }

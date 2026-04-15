@@ -28,7 +28,7 @@ public interface SysConfigService {
     /**
      * 更新配置
      *
-     * @param configKey 配置键
+     * @param configKey   配置键
      * @param configValue 配置值
      */
     void updateConfig(String configKey, String configValue);

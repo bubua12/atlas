@@ -3,7 +3,9 @@
 <mapper namespace="com.bubua12.atlas.system.mapper.SysRoleMapper">
 
     <delete id="deleteRoleDepts">
-        DELETE FROM sys_role_dept WHERE role_id = #{roleId}
+        DELETE
+        FROM sys_role_dept
+        WHERE role_id = #{roleId}
     </delete>
 
     <insert id="insertRoleDepts">

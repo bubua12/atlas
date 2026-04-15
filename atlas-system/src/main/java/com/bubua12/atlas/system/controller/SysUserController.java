@@ -5,6 +5,7 @@ import com.bubua12.atlas.api.system.dto.SysUserDTO;
 import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.result.CommonResult;
+import com.bubua12.atlas.common.security.annotation.InternalApi;
 import com.bubua12.atlas.common.security.annotation.RequiresPermission;
 import com.bubua12.atlas.system.converter.SysUserConverter;
 import com.bubua12.atlas.system.entity.request.AssignRolesRequest;
@@ -12,15 +13,7 @@ import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.service.SysMenuService;
 import com.bubua12.atlas.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -110,6 +103,7 @@ public class SysUserController {
      * @return CommonResult<UserDTO>
      */
     @GetMapping("/phone/{phone}")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<UserDTO> getUserByPhone(@PathVariable String phone) {
         SysUser user = sysUserService.getByPhone(phone);
         if (user == null) {
@@ -126,6 +120,7 @@ public class SysUserController {
      * @return 执行结果
      */
     @PostMapping("/oauth2/createUser")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<Void> createUserOAuth2(@RequestBody SysUserDTO sysUserDTO) {
 
         SysUser sysUser = sysUserConverter.vo2po(sysUserDTO);
@@ -141,6 +136,7 @@ public class SysUserController {
      * @return 用户信息
      */
     @GetMapping("/info/{username}")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<UserDTO> getUserByUsername(@PathVariable String username) {
         SysUser user = sysUserService.getByUsername(username);
         if (user == null) {
@@ -157,6 +153,7 @@ public class SysUserController {
      * @return 用户信息
      */
     @GetMapping("/openid/{openId}")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<UserDTO> getUserByOpenId(@PathVariable String openId) {
         SysUser user = sysUserService.getByOpenId(openId);
         if (user == null) {
@@ -174,6 +171,7 @@ public class SysUserController {
      * @return true 表示密码正确
      */
     @PostMapping("/verify-password")
+    @InternalApi(allowedServices = {"atlas-auth"})
     public CommonResult<Boolean> verifyPassword(@RequestParam("username") String username, @RequestParam("password") String password) {
         boolean valid = sysUserService.verifyPassword(username, password);
         return CommonResult.success(valid);

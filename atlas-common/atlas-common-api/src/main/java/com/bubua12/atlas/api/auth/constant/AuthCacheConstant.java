@@ -8,18 +8,28 @@ package com.bubua12.atlas.api.auth.constant;
  */
 public interface AuthCacheConstant {
 
-    /** IP 锁定标记前缀 */
+    /**
+     * IP 锁定标记前缀
+     */
     String AUTH_LOCK_IP_PREFIX = "auth:lock:ip:";
 
-    /** 账号锁定标记前缀 */
+    /**
+     * 账号锁定标记前缀
+     */
     String AUTH_LOCK_ACCOUNT_PREFIX = "auth:lock:account:";
 
-    /** IP 登录失败计数前缀 */
+    /**
+     * IP 登录失败计数前缀
+     */
     String AUTH_FAIL_IP_PREFIX = "auth:fail:ip:";
 
-    /** 账号登录失败计数前缀 */
+    /**
+     * 账号登录失败计数前缀
+     */
     String AUTH_FAIL_ACCOUNT_PREFIX = "auth:fail:account:";
 
-    /** Redis中登录令牌的key前缀 */
+    /**
+     * Redis中登录令牌的key前缀
+     */
     String AUTH_TOKEN_CACHE_PREFIX = "auth:token:";
 }

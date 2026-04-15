@@ -3,14 +3,14 @@ package com.bubua12.atlas.auth.service.impl;
 import com.bubua12.atlas.api.auth.constant.AuthCacheConstant;
 import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.auth.converter.AuthConverter;
+import com.bubua12.atlas.auth.entity.request.LoginRequest;
+import com.bubua12.atlas.auth.entity.vo.LoginVO;
 import com.bubua12.atlas.auth.exception.AuthErrorCode;
 import com.bubua12.atlas.auth.exception.AuthException;
-import com.bubua12.atlas.auth.entity.request.LoginRequest;
 import com.bubua12.atlas.auth.handler.LoginHandlerFactory;
 import com.bubua12.atlas.auth.service.AuthService;
 import com.bubua12.atlas.auth.service.LoginFailRecordService;
 import com.bubua12.atlas.auth.utils.AuthUtils;
-import com.bubua12.atlas.auth.entity.vo.LoginVO;
 import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
@@ -107,7 +107,8 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void logout(String token) {
-        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
+        String rawToken = jwtUtils.normalizeToken(token);
+        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
     }
 
     /**
@@ -115,13 +116,14 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public LoginVO refreshToken(String token) {
-        if (jwtUtils.isTokenExpired(token)) {
+        String rawToken = jwtUtils.normalizeToken(token);
+        if (jwtUtils.isTokenExpired(rawToken)) {
             throw new AuthException(AuthErrorCode.TOKEN_EXPIRED);
         }
-        Long userId = jwtUtils.getUserId(token);
-        String username = jwtUtils.getUsername(token);
-        LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
-        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + token);
+        Long userId = jwtUtils.getUserId(rawToken);
+        String username = jwtUtils.getUsername(rawToken);
+        LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
+        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
 
         String newToken = jwtUtils.generateToken(userId, username);
         if (loginUser != null) {

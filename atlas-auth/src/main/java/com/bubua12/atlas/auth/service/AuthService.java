@@ -11,8 +11,9 @@ public interface AuthService {
 
     /**
      * 统一登录，根据 grantType 路由到对应处理器完成认证
+     *
      * @param loginRequest 登录请求参数
-     * @param clientIp 客户端真实IP地址
+     * @param clientIp     客户端真实IP地址
      */
     LoginVO login(LoginRequest loginRequest, String clientIp);
 

@@ -7,6 +7,7 @@
 Atlas 是基于 JDK 21 构建的 Spring Boot 3 + Spring Cloud 微服务平台，提供认证授权、系统管理、监控、代码生成等企业级能力。
 
 **核心技术栈：**
+
 - Spring Boot 3.2.3 / Spring Cloud 2023.0.0 / Spring Cloud Alibaba 2023.0.1.0
 - JDK 21, Maven 3.9+
 - MyBatis-Plus 3.5.5, MySQL 8.x, Redis 7.x + Redisson
@@ -16,21 +17,25 @@ Atlas 是基于 JDK 21 构建的 Spring Boot 3 + Spring Cloud 微服务平台，
 ## 构建与运行命令
 
 **构建整个项目：**
+
 ```bash
 mvn clean install -DskipTests
 ```
 
 **构建指定模块：**
+
 ```bash
 mvn clean install -pl atlas-auth -am -DskipTests
 ```
 
 **运行测试：**
+
 ```bash
 mvn test
 ```
 
 **运行指定服务（示例）：**
+
 ```bash
 # IDE 中：直接运行 Application 启动类
 # 命令行：
@@ -44,6 +49,7 @@ java -jar atlas-system/atlas-system-biz/target/atlas-system-biz-1.0.0.jar
 ## 架构说明
 
 **微服务及端口：**
+
 - `atlas-gateway` (8080) - API 网关，统一入口
 - `atlas-auth` (9100) - 认证授权服务
 - `atlas-system` (9200) - 系统管理（用户、角色、菜单、部门、字典）
@@ -51,11 +57,13 @@ java -jar atlas-system/atlas-system-biz/target/atlas-system-biz-1.0.0.jar
 - `atlas-monitor` (9400) - 监控服务
 
 **模块结构：**
+
 - `atlas-dependencies` - BOM 依赖版本统一管理
 - `atlas-common` - 公共模块（core、web、redis、mybatis、security、log）
 - 业务服务遵循 `xxx-api`（Feign 接口 + DTO）+ `xxx-biz`（实现）模式
 
 **关键设计模式：**
+
 - 服务间调用使用 `xxx-api` 模块中定义的 Feign 客户端
 - 所有 API 响应使用统一的 `R<T>` 包装，包含 `code`、`msg`、`data` 字段
 - 网关路由所有请求：`/auth/**` → atlas-auth，`/system/**` → atlas-system，以此类推
@@ -65,6 +73,7 @@ java -jar atlas-system/atlas-system-biz/target/atlas-system-biz-1.0.0.jar
 项目使用 `@RequiresPermission` 注解通过 AOP 实现访问控制。
 
 **工作流程：**
+
 1. `PreAuthorizeAspect` 切面拦截所有标有 `@RequiresPermission` 的方法
 2. 从 `SecurityContextHolder`（ThreadLocal）获取当前用户 Token
 3. 从 Redis 中获取用户权限列表
@@ -73,6 +82,7 @@ java -jar atlas-system/atlas-system-biz/target/atlas-system-biz-1.0.0.jar
 6. 权限校验失败时抛出 `BusinessException` (403)
 
 **在 Controller 中使用：**
+
 ```java
 @RequiresPermission("system:user:list")
 @GetMapping("/list")
@@ -84,6 +94,7 @@ public R<List<SysUser>> list() { ... }
 **数据库配置：** 权限存储在 `sys_menu` 表的 `perms` 字段，通过 `sys_role_menu` 表关联到角色。
 
 **问题排查：**
+
 - 检查 Redis 中 `auth:token:xxx` 键，确认用户权限集合是否包含所需权限
 - 确保权限字符串完全匹配（区分大小写，无空格）
 - 确认 Controller 方法为 `public` 且类标注了 `@RestController`
@@ -97,6 +108,7 @@ public R<List<SysUser>> list() { ... }
 **分页查询：** 使用 `PageQuery` 类接收 Controller 中的分页参数。
 
 **模块依赖关系：**
+
 - 业务服务依赖 `atlas-common-web`、`atlas-common-redis`、`atlas-common-mybatis`、`atlas-common-security`、`atlas-common-log`
 - 网关仅依赖 `atlas-common-core`
 - `atlas-common-security` 依赖 `atlas-common-redis` 用于 Token 存储
@@ -106,6 +118,7 @@ public R<List<SysUser>> list() { ... }
 各服务的主配置文件位于 `src/main/resources/application.yml`。
 
 **关键配置项：**
+
 - Nacos：`spring.cloud.nacos.discovery.server-addr`（默认：127.0.0.1:8848）
 - 数据库：`spring.datasource.url`（默认：jdbc:mysql://127.0.0.1:3306/atlas）
 - Redis：`spring.data.redis.host`（默认：127.0.0.1）
@@ -118,7 +131,6 @@ public R<List<SysUser>> list() { ... }
 - 需要权限控制的 Controller 方法添加 `@RequiresPermission` 注解
 - 需要记录操作日志的 Controller 方法添加 `@OperLog` 注解
 - 超级管理员（User ID = 1）默认拥有所有权限
-
 
 ---
 

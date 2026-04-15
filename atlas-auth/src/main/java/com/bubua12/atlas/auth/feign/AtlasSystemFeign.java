@@ -4,11 +4,7 @@ import com.bubua12.atlas.api.system.dto.SysUserDTO;
 import com.bubua12.atlas.api.system.dto.UserDTO;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * atlas-system 用户服务 Feign 客户端

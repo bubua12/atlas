@@ -30,6 +30,18 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
+atlas:
+  security:
+    gateway:
+      secret: ${ATLAS_GATEWAY_SIGNATURE_SECRET:atlas-gateway-signature-secret-change-me}
+      allowed-skew-seconds: 300
+      nonce-ttl-seconds: 300
+    internal:
+      service-name: ${spring.application.name}
+      allowed-skew-seconds: 300
+      nonce-ttl-seconds: 300
+      trusted-services:
+        atlas-auth: ${ATLAS_AUTH_INTERNAL_SECRET:atlas-auth-internal-secret-change-me}
 
 
 knife4j:

@@ -1,7 +1,7 @@
 package com.bubua12.atlas.common.web.handler;
 
-import com.bubua12.atlas.common.core.exception.BusinessException;
 import com.bubua12.atlas.common.core.exception.BusinessErrorCode;
+import com.bubua12.atlas.common.core.exception.BusinessException;
 import com.bubua12.atlas.common.core.exception.SystemErrorCode;
 import com.bubua12.atlas.common.core.result.CommonResult;
 import lombok.extern.slf4j.Slf4j;

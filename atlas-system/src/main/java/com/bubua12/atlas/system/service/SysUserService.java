@@ -75,7 +75,7 @@ public interface SysUserService {
     /**
      * 验证用户密码
      *
-     * @param username 用户名
+     * @param username    用户名
      * @param rawPassword 明文密码
      * @return true 表示校验通过
      */
@@ -84,7 +84,7 @@ public interface SysUserService {
     /**
      * 给用户分配角色
      *
-     * @param userId 用户ID
+     * @param userId  用户ID
      * @param roleIds 角色ID列表
      */
     void assignRoles(Long userId, List<Long> roleIds);

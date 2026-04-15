@@ -1,6 +1,7 @@
 package com.bubua12.atlas.common.web.config;
 
-import com.bubua12.atlas.common.redis.service.RedisService;
+import com.bubua12.atlas.common.security.service.RequestSignatureService;
+import com.bubua12.atlas.common.web.interceptor.GatewayIdentityInterceptor;
 import com.bubua12.atlas.common.web.interceptor.UserContextInterceptor;
 import com.bubua12.atlas.common.web.resolver.ClientIpArgumentResolver;
 import lombok.RequiredArgsConstructor;
@@ -15,16 +16,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final RedisService redisService;
+    private final RequestSignatureService requestSignatureService;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new UserContextInterceptor(redisService))
-                .addPathPatterns("/**");
+        // 先验签，再建立线程上下文；顺序反过来就会重新把未经验证的身份写回 SecurityContextHolder。
+        registry.addInterceptor(new GatewayIdentityInterceptor(requestSignatureService))
+                .addPathPatterns("/**")
+                .order(0);
+
+        registry.addInterceptor(new UserContextInterceptor())
+                .addPathPatterns("/**")
+                .order(1);
     }
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        // @ClientIp 这类参数解析依然保留，不受新增安全链路影响。
         resolvers.add(new ClientIpArgumentResolver());
     }
 }

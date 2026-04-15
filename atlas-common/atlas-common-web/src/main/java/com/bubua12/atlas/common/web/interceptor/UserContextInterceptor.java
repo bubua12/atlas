@@ -1,57 +1,59 @@
 package com.bubua12.atlas.common.web.interceptor;
 
 import com.bubua12.atlas.common.core.context.SecurityContextHolder;
+import com.bubua12.atlas.common.core.model.GatewayUserContext;
 import com.bubua12.atlas.common.core.model.LoginUser;
-import com.bubua12.atlas.common.redis.service.RedisService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.ATTR_GATEWAY_USER_CONTEXT;
+import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.AUTHORIZATION;
+
 /**
- * 用户上下文拦截器
- * 从请求头中获取用户信息并存入 ThreadLocal，
- * 同时从 Redis 取出完整的 LoginUser 存入上下文，
- * 供数据权限等组件使用。
+ * 用户上下文拦截器。
+ *
+ * <p>这个拦截器只消费已经被 {@link GatewayIdentityInterceptor} 验证过的 request attribute，
+ * 不再直接信任原始请求头里的用户信息，从而把“可伪造输入”和“可信身份上下文”隔离开。
  */
-@RequiredArgsConstructor
 public class UserContextInterceptor implements HandlerInterceptor {
 
-    private static final String TOKEN_CACHE_PREFIX = "auth:token:";
-
-    private final RedisService redisService;
-
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        // 从请求头获取网关透传的用户信息
-        String userId = request.getHeader("X-User-Id");
-        String username = request.getHeader("X-User-Name");
-        // 网关会将原始 Token 透传
-        String token = request.getHeader("Authorization");
-
-        if (userId != null) {
-            SecurityContextHolder.setUserId(Long.valueOf(userId));
-        }
-        if (username != null) {
-            SecurityContextHolder.setUsername(username);
-        }
-        if (token != null) {
+    public boolean preHandle(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull Object handler
+    ) {
+        String token = request.getHeader(AUTHORIZATION);
+        if (token != null && !token.isBlank()) {
+            // 保留原始 Authorization，方便现有权限切面和兼容逻辑继续工作。
             SecurityContextHolder.setToken(token);
+        }
 
-            // fixme 线程上下文塞实体类会不会比较臃肿？影响性能之类的？还是说实时查询是哪个用户？
-            // 从 Redis 获取完整的 LoginUser（含 deptId、dataScope 等）
-            String rawToken = token.startsWith("Bearer ") ? token.substring(7) : token;
-            LoginUser loginUser = redisService.get(TOKEN_CACHE_PREFIX + rawToken);
-            if (loginUser != null) {
-                SecurityContextHolder.setLoginUser(loginUser);
+        Object gatewayUserContext = request.getAttribute(ATTR_GATEWAY_USER_CONTEXT);
+        if (gatewayUserContext instanceof GatewayUserContext userContext) {
+            // 只有经过验签的用户断言才会被恢复成统一登录态，供权限和数据权限逻辑复用。
+            LoginUser loginUser = userContext.toLoginUser();
+            if (loginUser.getUserId() != null) {
+                SecurityContextHolder.setUserId(loginUser.getUserId());
             }
+            if (loginUser.getUsername() != null) {
+                SecurityContextHolder.setUsername(loginUser.getUsername());
+            }
+            SecurityContextHolder.setLoginUser(loginUser);
         }
         return true;
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        // 请求处理完成后清理 ThreadLocal，防止内存泄漏
+    public void afterCompletion(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull Object handler,
+            Exception ex
+    ) {
+        // ThreadLocal 生命周期必须跟随一次 HTTP 请求结束，避免线程复用时串用户。
         SecurityContextHolder.clear();
     }
 }

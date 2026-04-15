@@ -6,6 +6,7 @@
 在微服务管理平台中，常见的数据权限场景：
 
 1. 部门数据权限
+
 - 全部数据：能看到所有部门的数据
 - 本部门及下级部门：只能看到自己部门和子部门的数据
 - 仅本部门：只能看到本部门数据
@@ -33,16 +34,17 @@ AND dept_id IN (当前用户可见的部门ID列表)  -- 数据权限过滤
 4. 与功能权限的区别
 
 ┌──────────┬────────────────┬──────────────────────────────────────┐
-│   类型   │    控制内容    │                 示例                 │
+│ 类型 │ 控制内容 │ 示例 │
 ├──────────┼────────────────┼──────────────────────────────────────┤
 │ 功能权限 │ 能否执行某操作 │ system:user:list（能否查看用户列表） │
 ├──────────┼────────────────┼──────────────────────────────────────┤
-│ 数据权限 │ 能看到哪些数据 │ 只能看到本部门的用户，而非全部用户   │
+│ 数据权限 │ 能看到哪些数据 │ 只能看到本部门的用户，而非全部用户 │
 └──────────┴────────────────┴──────────────────────────────────────┘
 
 5. 在 Atlas 项目中的潜在实现位置
 
 如果要添加数据权限，通常会：
+
 - 在 sys_role 表增加 data_scope 字段（1=全部，2=本部门及下级，3=仅本部门，4=仅本人）
 - 在 MyBatis 拦截器或 AOP 中自动注入数据过滤条件
 - 结合 sys_user 的 dept_id 和部门层级关系进行过滤
@@ -66,15 +68,15 @@ AND dept_id IN (当前用户可见的部门ID列表)  -- 数据权限过滤
 技术选型
 
 ┌─────────────────────┬────────────────────────────────────────────┐
-│        组件         │                    作用                    │
+│ 组件 │ 作用 │
 ├─────────────────────┼────────────────────────────────────────────┤
-│ @DataScope 注解     │ 标记需要数据权限过滤的方法                 │
+│ @DataScope 注解 │ 标记需要数据权限过滤的方法 │
 ├─────────────────────┼────────────────────────────────────────────┤
 │ MyBatis Interceptor │ 拦截 Executor.query() 和 Executor.update() │
 ├─────────────────────┼────────────────────────────────────────────┤
-│ JSqlParser          │ 解析和改写 SQL（已在项目中使用）           │
+│ JSqlParser │ 解析和改写 SQL（已在项目中使用） │
 ├─────────────────────┼────────────────────────────────────────────┤
-│ ThreadLocal         │ 存储当前用户的数据权限上下文               │
+│ ThreadLocal │ 存储当前用户的数据权限上下文 │
 └─────────────────────┴────────────────────────────────────────────┘
 
   ---
@@ -104,20 +106,22 @@ String deptAlias() default "";
 
       /** 用户表别名（用于过滤用户） */
       String userAlias() default "";
+
 }
 
 2. 数据权限上下文
 
 public class DataScopeContext {
-private Integer dataScope;      // 数据权限类型
-private Long userId;            // 当前用户ID
-private Long deptId;            // 当前用户部门ID
-private Set<Long> deptIds;      // 可见部门ID集合
+private Integer dataScope; // 数据权限类型
+private Long userId; // 当前用户ID
+private Long deptId; // 当前用户部门ID
+private Set<Long> deptIds; // 可见部门ID集合
 }
 
 3. MyBatis 拦截器
 
 拦截 SQL 执行，检测到 @DataScope 注解时：
+
 - 从 SecurityContextHolder 获取当前用户
 - 根据用户角色的 data_scope 计算可见范围
 - 使用 JSqlParser 在 WHERE 子句中追加过滤条件
@@ -139,13 +143,16 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 
       @DataScope(deptAlias = "d", userAlias = "u")
       List<SysUser> selectUserList(@Param("query") UserQuery query);
+
 }
 
 拦截器会自动根据当前用户的数据权限，在 SQL 中注入：
+
 - d.id IN (可见部门ID列表) 或
 - u.id = 当前用户ID
 
   ---
+
 优势
 
 - 无侵入：业务代码只需加注解，无需手动拼接 SQL
@@ -154,6 +161,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 - 高效：拦截器层面处理，避免重复逻辑
 
   ---
+
 注意事项
 
 1. 超级管理员豁免：User ID = 1 跳过数据权限过滤
@@ -163,6 +171,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 
   ---
 需要我开始实现具体代码吗？我会按照以下顺序：
+
 1. 注解定义
 2. 数据权限上下文类
 3. MyBatis 拦截器
@@ -174,6 +183,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 ● 我建议 @DataScope 注解设计如下：
 
 /**
+
 * 数据权限过滤注解
 * 用于 Mapper 方法，自动根据用户角色的数据权限范围过滤查询结果
   */
@@ -243,17 +253,17 @@ List<SysDept> selectDeptList(@Param("query") DeptQuery query);
 根据注解参数和用户数据权限类型，生成不同的 SQL 片段：
 
 ┌──────────────┬───────────────────────────┐
-│ 数据权限类型 │      生成的 SQL 条件      │
+│ 数据权限类型 │ 生成的 SQL 条件 │
 ├──────────────┼───────────────────────────┤
-│ 全部数据     │ 不追加条件                │
+│ 全部数据 │ 不追加条件 │
 ├──────────────┼───────────────────────────┤
 │ 本部门及下级 │ d.dept_id IN (1,2,3,...)  │
 ├──────────────┼───────────────────────────┤
-│ 仅本部门     │ d.dept_id = 10            │
+│ 仅本部门 │ d.dept_id = 10 │
 ├──────────────┼───────────────────────────┤
-│ 仅本人       │ u.id = 100                │
+│ 仅本人 │ u.id = 100 │
 ├──────────────┼───────────────────────────┤
-│ 自定义部门   │ d.dept_id IN (5,8,12,...) │
+│ 自定义部门 │ d.dept_id IN (5,8,12,...) │
 └──────────────┴───────────────────────────┘
 
 这样设计够用吗？还是需要增加其他配置项？
@@ -273,19 +283,23 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 
       @DataScope(deptAlias = "d")
       IPage<SysUser> selectUserPage(IPage<SysUser> page, @Param("query") UserQuery query);
+
 }
 
 为什么是 Mapper 层？
 
 1. 拦截时机合适
+
 - MyBatis 拦截器在 SQL 执行前介入，可以直接改写 SQL
 - 比在 Service 层手动拼接条件更优雅
 
 2. 与 SQL 强关联
+
 - 注解参数（表别名、字段名）直接对应 SQL 结构
 - 拦截器可以通过反射获取方法上的注解
 
 3. 无侵入业务逻辑
+
 - Service 层无需感知数据权限实现细节
 - Controller 和 Service 代码保持简洁
 
@@ -303,13 +317,13 @@ MyBatis 拦截器 (检测注解 → 改写 SQL)
 对比其他方案
 
 ┌────────────────────┬──────────────────────────────┬──────────────────────────────────┐
-│        方案        │           标注位置           │               缺点               │
+│ 方案 │ 标注位置 │ 缺点 │
 ├────────────────────┼──────────────────────────────┼──────────────────────────────────┤
 │ ❌ Controller 方法 │ @DataScope 在 @GetMapping 上 │ 无法直接影响 SQL，需要传参到底层 │
 ├────────────────────┼──────────────────────────────┼──────────────────────────────────┤
-│ ❌ Service 方法    │ @DataScope 在 Service 上     │ 同样无法直接改写 SQL             │
+│ ❌ Service 方法 │ @DataScope 在 Service 上 │ 同样无法直接改写 SQL │
 ├────────────────────┼──────────────────────────────┼──────────────────────────────────┤
-│ ✅ Mapper 方法     │ @DataScope 在 Mapper 上      │ 拦截器可直接获取并处理           │
+│ ✅ Mapper 方法 │ @DataScope 在 Mapper 上 │ 拦截器可直接获取并处理 │
 └────────────────────┴──────────────────────────────┴──────────────────────────────────┘
 
 所以标准用法就是：在需要数据权限过滤的 Mapper 查询方法上加 @DataScope 注解。
@@ -321,32 +335,36 @@ MyBatis 拦截器 (检测注解 → 改写 SQL)
 为什么要在 sys_role 加 data_scope 字段？
 
 核心逻辑：
+
 - 用户 → 拥有角色 → 角色决定数据权限范围
 
 举例说明：
 
 角色A：销售经理
+
 - 功能权限：system:user:list（能查用户列表）
 - 数据权限：本部门及下级（data_scope = 2）
-→ 能看到销售部及下属团队的所有用户
+  → 能看到销售部及下属团队的所有用户
 
 角色B：普通销售
+
 - 功能权限：system:user:list（能查用户列表）
 - 数据权限：仅本人（data_scope = 4）
-→ 只能看到自己的数据
+  → 只能看到自己的数据
 
 角色C：超级管理员
+
 - 功能权限：*:*:*（所有权限）
 - 数据权限：全部数据（data_scope = 1）
-→ 能看到所有用户
+  → 能看到所有用户
 
 数据权限类型枚举
 
-1 = 全部数据         // 不做任何过滤
-2 = 本部门及下级部门  // dept_id IN (当前部门 + 子部门)
-3 = 仅本部门         // dept_id = 当前部门
-4 = 仅本人           // user_id = 当前用户
-5 = 自定义部门       // dept_id IN (sys_role_dept 表配置的部门)
+1 = 全部数据 // 不做任何过滤
+2 = 本部门及下级部门 // dept_id IN (当前部门 + 子部门)
+3 = 仅本部门 // dept_id = 当前部门
+4 = 仅本人 // user_id = 当前用户
+5 = 自定义部门 // dept_id IN (sys_role_dept 表配置的部门)
 
 工作流程
 
@@ -359,6 +377,7 @@ MyBatis 拦截器 (检测注解 → 改写 SQL)
 为什么不放在用户表？
 
 如果放在 sys_user 表：
+
 - ❌ 一个用户可能有多个角色，每个角色的数据权限不同
 - ❌ 修改数据权限需要逐个修改用户，而不是批量修改角色
 - ❌ 违反 RBAC 设计原则（权限应该绑定在角色上）
@@ -374,22 +393,24 @@ MyBatis 拦截器 (检测注解 → 改写 SQL)
 atlas-common/
 └── atlas-common-mybatis/
 └── src/main/java/com/atlas/common/mybatis/├── annotation/
-│   └── DataScope.java          ← 注解定义
+│ └── DataScope.java ← 注解定义
 ├── interceptor/
-│   └── DataScopeInterceptor.java  ← MyBatis 拦截器
+│ └── DataScopeInterceptor.java ← MyBatis 拦截器
 ├── handler/
-│   └── DataScopeHandler.java      ← 数据权限处理逻辑
+│ └── DataScopeHandler.java ← 数据权限处理逻辑
 └── enums/
-└── DataScopeType.java         ← 数据权限类型枚举
+└── DataScopeType.java ← 数据权限类型枚举
 
 为什么是 atlas-common-mybatis？
 
 1. 职责匹配
+
 - 数据权限本质是 SQL 层面的过滤
 - 与 MyBatis 拦截器强绑定
 - 和分页插件、SQL 日志等属于同一层次
 
 2. 复用性
+
 - 所有业务服务（atlas-system、atlas-auth、atlas-infra）都依赖 atlas-common-mybatis
 - 一次实现，全局可用
 
@@ -398,15 +419,16 @@ atlas-common/
    └── 被依赖 atlas-system-biz、atlas-auth 等业务模块
 
 4. 与现有架构一致
+
 - 项目已有 atlas-common-security（功能权限）
 - atlas-common-mybatis（数据权限）形成对称设计
 
 包结构建议
 
-com.atlas.common.mybatis.annotation.DataScope       // 注解
-com.atlas.common.mybatis.enums.DataScopeType        // 枚举：1=全部 2=本部门及下级...
-com.atlas.common.mybatis.interceptor.DataScopeInterceptor  // 拦截器
-com.atlas.common.mybatis.handler.DataScopeHandler   // 权限计算 + SQL 改写
+com.atlas.common.mybatis.annotation.DataScope // 注解
+com.atlas.common.mybatis.enums.DataScopeType // 枚举：1=全部 2=本部门及下级...
+com.atlas.common.mybatis.interceptor.DataScopeInterceptor // 拦截器
+com.atlas.common.mybatis.handler.DataScopeHandler // 权限计算 + SQL 改写
 
 需要我开始实现吗？
 
@@ -419,6 +441,7 @@ com.atlas.common.mybatis.handler.DataScopeHandler   // 权限计算 + SQL 改写
 MyBatis 提供了插件机制，允许在 SQL 执行的关键节点进行拦截和修改。
 
   ---
+
 1. MyBatis 执行流程
 
 用户调用 Mapper 方法
@@ -434,19 +457,20 @@ MyBatis 解析方法和注解
 返回结果
 
   ---
+
 2. 拦截器工作原理
 
 步骤 1：定义拦截器
 
 @Intercepts({
 @Signature(
-type = Executor.class,           // 拦截 Executor
-method = "query",                // 拦截 query 方法
+type = Executor.class, // 拦截 Executor
+method = "query", // 拦截 query 方法
 args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}
 ),
 @Signature(
 type = Executor.class,
-method = "update",               // 拦截 update 方法（insert/update/delete）
+method = "update", // 拦截 update 方法（insert/update/delete）
 args = {MappedStatement.class, Object.class}
 )
 })
@@ -457,14 +481,17 @@ public class DataScopeInterceptor implements Interceptor {
       public Object intercept(Invocation invocation) throws Throwable {
           // 这里可以修改 SQL
       }
+
 }
 
 关键点：
+
 - @Intercepts 声明要拦截的方法
 - Executor.query() 是所有查询的入口
 - Executor.update() 是所有增删改的入口
 
   ---
+
 步骤 2：获取原始 SQL
 
 @Override
@@ -482,6 +509,7 @@ MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
       // 例如：SELECT * FROM sys_user WHERE deleted = 0
 
       // 继续执行...
+
 }
 
   ---
@@ -545,6 +573,7 @@ break;
       case 4: // 仅本人
           filterCondition = userAlias + ".id = " + loginUser.getUserId();
           break;
+
 }
 
   ---
@@ -586,6 +615,7 @@ sqlField.set(boundSql, newSql);
 return invocation.proceed();
 
   ---
+
 3. 完整流程示意图
 
 Mapper.selectUserList()
@@ -607,36 +637,41 @@ Mapper.selectUserList()
 返回结果（只包含本部门用户）
 
   ---
+
 4. 关键技术点
 
 ┌─────────────────────┬──────────────────────────┐
-│        技术         │           作用           │
+│ 技术 │ 作用 │
 ├─────────────────────┼──────────────────────────┤
-│ MyBatis Interceptor │ 拦截 SQL 执行            │
+│ MyBatis Interceptor │ 拦截 SQL 执行 │
 ├─────────────────────┼──────────────────────────┤
-│ 反射                │ 获取 Mapper 方法上的注解 │
+│ 反射 │ 获取 Mapper 方法上的注解 │
 ├─────────────────────┼──────────────────────────┤
-│ JSqlParser          │ 解析和改写 SQL           │
+│ JSqlParser │ 解析和改写 SQL │
 ├─────────────────────┼──────────────────────────┤
-│ ThreadLocal         │ 获取当前用户上下文       │
+│ ThreadLocal │ 获取当前用户上下文 │
 ├─────────────────────┼──────────────────────────┤
-│ 反射修改 BoundSql   │ 替换原始 SQL             │
+│ 反射修改 BoundSql │ 替换原始 SQL │
 └─────────────────────┴──────────────────────────┘
 
   ---
+
 5. 为什么这样设计？
 
 优点：
+
 - ✅ 业务代码无感知（只需加注解）
 - ✅ SQL 改写自动化（无需手动拼接）
 - ✅ 统一管理（所有数据权限逻辑集中在拦截器）
 - ✅ 灵活（支持多表、复杂查询）
 
 缺点：
+
 - ❌ 依赖反射和 SQL 解析（有性能开销）
 - ❌ 复杂 SQL 可能解析失败（需要测试）
 
   ---
+
 理解了吗？需要我继续讲解某个具体步骤吗？
 
 ✻ Baked for 32s
@@ -709,12 +744,14 @@ commit(boolean required)
 rollback(boolean required)
 
 使用场景：
+
 - ✅ 数据权限过滤（在 SQL 执行前修改）
 - ✅ 分页插件（修改 SQL 添加 LIMIT）
 - ✅ SQL 日志记录
 - ✅ 慢查询监控
 
   ---
+
 2. StatementHandler（语句处理器）
 
 职责： 负责 SQL 语句的准备和执行
@@ -733,11 +770,13 @@ query(Statement statement, ResultHandler resultHandler)
 update(Statement statement)
 
 使用场景：
+
 - ✅ SQL 改写（比 Executor 更底层）
 - ✅ 动态修改超时时间
 - ✅ SQL 防火墙（检测危险 SQL）
 
   ---
+
 3. ParameterHandler（参数处理器）
 
 职责： 负责将 Java 对象参数设置到 PreparedStatement
@@ -750,11 +789,13 @@ setParameters(PreparedStatement ps)
 getParameterObject()
 
 使用场景：
+
 - ✅ 参数加密（敏感字段自动加密）
 - ✅ 参数校验
 - ✅ 参数日志记录
 
   ---
+
 4. ResultSetHandler（结果集处理器）
 
 职责： 负责将 JDBC ResultSet 映射为 Java 对象
@@ -767,11 +808,13 @@ handleResultSets(Statement stmt)
 handleOutputParameters(CallableStatement cs)
 
 使用场景：
+
 - ✅ 结果脱敏（手机号、身份证自动打码）
 - ✅ 结果解密
 - ✅ 结果缓存
 
   ---
+
 三、拦截器的实现原理
 
 1. 拦截器接口
@@ -789,16 +832,18 @@ public interface Interceptor {
       // 设置属性（可选，用于配置参数）
       default void setProperties(Properties properties) {
       }
+
 }
 
   ---
+
 2. 拦截器注解
 
 @Intercepts({
 @Signature(
-type = Executor.class,              // 拦截哪个对象
-method = "query",                   // 拦截哪个方法
-args = {                            // 方法参数类型（用于匹配重载方法）
+type = Executor.class, // 拦截哪个对象
+method = "query", // 拦截哪个方法
+args = { // 方法参数类型（用于匹配重载方法）
 MappedStatement.class,
 Object.class,
 RowBounds.class,
@@ -811,11 +856,13 @@ public class MyInterceptor implements Interceptor {
 }
 
 关键点：
+
 - type：指定拦截的核心对象（Executor/StatementHandler/ParameterHandler/ResultSetHandler）
 - method：指定拦截的方法名
 - args：方法参数类型数组（必须完全匹配）
 
   ---
+
 3. 拦截器执行流程
 
 @Override
@@ -840,6 +887,7 @@ public Object intercept(Invocation invocation) throws Throwable {
 
       // 6. 返回结果（可以修改返回值）
       return result;
+
 }
 
   ---
@@ -881,6 +929,7 @@ public class Plugin implements InvocationHandler {
               return method.invoke(target, args);
           }
       }
+
 }
 
   ---
@@ -895,43 +944,46 @@ SqlSession.selectList()
 【拦截点】Executor.query() ⭐ 数据权限拦截器在这里介入
 ↓
 拦截器执行：
+
 1. 获取原始 SQL
 2. 检查 @DataScope 注解
 3. 获取当前用户数据权限
 4. 改写 SQL（添加 WHERE 条件）
 5. 调用 invocation.proceed() 继续执行
-↓
-StatementHandler.prepare()（创建 PreparedStatement）
-↓
-ParameterHandler.setParameters()（设置参数）
-↓
-PreparedStatement.execute()（执行改写后的 SQL）
-↓
-ResultSetHandler.handleResultSets()（处理结果）
-↓
-返回过滤后的数据
+   ↓
+   StatementHandler.prepare()（创建 PreparedStatement）
+   ↓
+   ParameterHandler.setParameters()（设置参数）
+   ↓
+   PreparedStatement.execute()（执行改写后的 SQL）
+   ↓
+   ResultSetHandler.handleResultSets()（处理结果）
+   ↓
+   返回过滤后的数据
 
   ---
 六、为什么选择拦截 Executor？
 
 ┌──────────────────┬──────────────────────────────────┬──────────────────────────┬───────────────────┐
-│     拦截对象     │               优点               │           缺点           │     适用场景      │
+│ 拦截对象 │ 优点 │ 缺点 │ 适用场景 │
 ├──────────────────┼──────────────────────────────────┼──────────────────────────┼───────────────────┤
-│ Executor         │ SQL 还未生成 Statement，容易修改 │ 需要解析 SQL 字符串      │ ✅ 数据权限、分页 │
+│ Executor │ SQL 还未生成 Statement，容易修改 │ 需要解析 SQL 字符串 │ ✅ 数据权限、分页 │
 ├──────────────────┼──────────────────────────────────┼──────────────────────────┼───────────────────┤
-│ StatementHandler │ 更底层，可以修改 Statement       │ SQL 已经准备好，修改复杂 │ SQL 防火墙        │
+│ StatementHandler │ 更底层，可以修改 Statement │ SQL 已经准备好，修改复杂 │ SQL 防火墙 │
 ├──────────────────┼──────────────────────────────────┼──────────────────────────┼───────────────────┤
-│ ParameterHandler │ 可以修改参数                     │ 无法修改 SQL 结构        │ 参数加密          │
+│ ParameterHandler │ 可以修改参数 │ 无法修改 SQL 结构 │ 参数加密 │
 ├──────────────────┼──────────────────────────────────┼──────────────────────────┼───────────────────┤
-│ ResultSetHandler │ 可以修改返回结果                 │ SQL 已执行，无法减少查询 │ 结果脱敏          │
+│ ResultSetHandler │ 可以修改返回结果 │ SQL 已执行，无法减少查询 │ 结果脱敏 │
 └──────────────────┴──────────────────────────────────┴──────────────────────────┴───────────────────┘
 
 数据权限选择 Executor 的原因：
+
 - ✅ 可以直接修改 SQL 字符串（添加 WHERE 条件）
 - ✅ 在 SQL 执行前介入，避免查询无关数据
 - ✅ 性能最优（数据库层面过滤）
 
   ---
+
 需要我继续讲解拦截器的具体实现代码吗？
 
 
@@ -942,23 +994,23 @@ ResultSetHandler.handleResultSets()（处理结果）
 MyBatis 拦截器 vs MySQL Slow Log
 
 ┌──────────┬────────────────────────────────────┬───────────────────────────────────────┐
-│ 对比维度 │        MyBatis 拦截器慢 SQL        │            MySQL Slow Log             │
+│ 对比维度 │ MyBatis 拦截器慢 SQL │ MySQL Slow Log │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 记录位置 │ 应用层（Java 进程）                │ 数据库层（MySQL 服务器）              │
+│ 记录位置 │ 应用层（Java 进程） │ 数据库层（MySQL 服务器） │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 记录内容 │ SQL + 参数 + 执行时间 + 业务上下文 │ SQL + 执行时间 + 锁等待时间           │
+│ 记录内容 │ SQL + 参数 + 执行时间 + 业务上下文 │ SQL + 执行时间 + 锁等待时间 │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 阈值配置 │ 代码中灵活配置（可动态调整）       │ MySQL 配置文件（需重启或 SET GLOBAL） │
+│ 阈值配置 │ 代码中灵活配置（可动态调整） │ MySQL 配置文件（需重启或 SET GLOBAL） │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 性能影响 │ 轻微（仅拦截应用发出的 SQL）       │ 较大（记录所有慢查询到文件）          │
+│ 性能影响 │ 轻微（仅拦截应用发出的 SQL） │ 较大（记录所有慢查询到文件） │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 业务关联 │ ✅ 可记录用户、接口、Mapper 方法   │ ❌ 无法关联业务信息                   │
+│ 业务关联 │ ✅ 可记录用户、接口、Mapper 方法 │ ❌ 无法关联业务信息 │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 参数展示 │ ✅ 可展示实际参数值                │ ❌ 只有占位符 ?                       │
+│ 参数展示 │ ✅ 可展示实际参数值 │ ❌ 只有占位符 ? │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 实时告警 │ ✅ 可直接发送到监控系统            │ ❌ 需要额外工具解析日志               │
+│ 实时告警 │ ✅ 可直接发送到监控系统 │ ❌ 需要额外工具解析日志 │
 ├──────────┼────────────────────────────────────┼───────────────────────────────────────┤
-│ 多数据源 │ ✅ 可区分不同数据源                │ ❌ 每个 MySQL 实例独立记录            │
+│ 多数据源 │ ✅ 可区分不同数据源 │ ❌ 每个 MySQL 实例独立记录 │
 └──────────┴────────────────────────────────────┴───────────────────────────────────────┘
 
   ---
@@ -967,18 +1019,24 @@ MyBatis 拦截器 vs MySQL Slow Log
 场景：查询用户列表耗时 3 秒
 
 MySQL Slow Log 记录：
+
 # Time: 2026-03-27T03:30:51.123456Z
+
 # User@Host: atlas[atlas] @ localhost []
+
 # Query_time: 3.125000  Lock_time: 0.000123 Rows_sent: 1000  Rows_examined: 50000
+
 SELECT * FROM sys_user WHERE dept_id = ? AND status = ?;
 
 问题：
+
 - ❌ 不知道 ? 的实际值是什么
 - ❌ 不知道是哪个接口调用的
 - ❌ 不知道是哪个用户触发的
 - ❌ 需要手动分析日志文件
 
   ---
+
 MyBatis 拦截器记录：
 {
 "sql": "SELECT * FROM sys_user WHERE dept_id = 10 AND status = 1",
@@ -995,12 +1053,14 @@ MyBatis 拦截器记录：
 }
 
 优势：
+
 - ✅ 参数值清晰可见
 - ✅ 知道是 /system/user/list 接口
 - ✅ 知道是用户"张三"触发的
 - ✅ 可直接发送到 ELK/Prometheus 告警
 
   ---
+
 MyBatis 慢 SQL 拦截器实现
 
 @Intercepts({
@@ -1058,6 +1118,7 @@ public class SlowSqlInterceptor implements Interceptor {
           // 可选：发送到监控系统
           // monitorService.reportSlowSql(sql, executionTime, mapperId);
       }
+
 }
 
   ---
@@ -1078,18 +1139,22 @@ public class SlowSqlInterceptor implements Interceptor {
 - ✅ 需要记录所有客户端的慢查询（不仅是应用）
 
   ---
+
 最佳实践：两者结合
 
 MyBatis 拦截器（应用层）↓
 记录业务相关的慢 SQL
 发送告警到监控系统
+
 +
+
 MySQL Slow Log（数据库层）
 ↓
 DBA 分析数据库性能
 优化索引和查询计划
 
 典型流程：
+
 1. MyBatis 拦截器发现慢 SQL 告警
 2. 开发人员查看业务上下文（哪个接口、哪个用户）
 3. DBA 查看 MySQL Slow Log 分析执行计划
@@ -1133,6 +1198,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 ```
 
 对应 SQL：
+
 ```sql
 SELECT u.* FROM sys_user u
 LEFT JOIN sys_dept d ON u.dept_id = d.id
@@ -1140,6 +1206,7 @@ WHERE u.deleted = 0
 ```
 
 拦截器会根据当前用户数据权限自动追加条件：
+
 - 本部门及下级：`AND d.id IN (1,2,3,...)`
 - 仅本部门：`AND d.dept_id = 10`
 - 仅本人：`AND u.id = 100`
@@ -1154,6 +1221,7 @@ List<Order> selectOrderList(@Param("query") OrderQuery query);
 ```
 
 对应 SQL：
+
 ```sql
 SELECT * FROM orders o WHERE o.status = 1
 ```
@@ -1170,6 +1238,7 @@ List<SysDept> selectDeptList(@Param("query") DeptQuery query);
 ```
 
 对应 SQL：
+
 ```sql
 SELECT * FROM sys_dept d WHERE d.deleted = 0
 ```
@@ -1180,13 +1249,13 @@ SELECT * FROM sys_dept d WHERE d.deleted = 0
 
 ### 数据权限类型
 
-| 类型 | 值 | 说明 | 生成的 SQL 条件 |
-|------|-----|------|----------------|
-| 全部数据 | 1 | 不做任何过滤 | 无 |
-| 本部门及下级 | 2 | 当前部门 + 子部门 | `dept_id IN (1,2,3,...)` |
-| 仅本部门 | 3 | 仅当前部门 | `dept_id = 10` |
-| 仅本人 | 4 | 仅当前用户 | `user_id = 100` |
-| 自定义部门 | 5 | 指定部门列表 | `dept_id IN (5,8,12,...)` |
+| 类型     | 值 | 说明         | 生成的 SQL 条件                |
+|--------|---|------------|---------------------------|
+| 全部数据   | 1 | 不做任何过滤     | 无                         |
+| 本部门及下级 | 2 | 当前部门 + 子部门 | `dept_id IN (1,2,3,...)`  |
+| 仅本部门   | 3 | 仅当前部门      | `dept_id = 10`            |
+| 仅本人    | 4 | 仅当前用户      | `user_id = 100`           |
+| 自定义部门  | 5 | 指定部门列表     | `dept_id IN (5,8,12,...)` |
 
 ### 工作原理
 
