@@ -24,3 +24,15 @@
 - 已执行 `mvn -pl atlas-gateway,atlas-auth,atlas-system,atlas-infra,atlas-monitor -am -DskipTests compile`，构建通过。
 - 已执行 `mvn -pl atlas-gateway,atlas-auth,atlas-system,atlas-infra,atlas-monitor -am test`，现有测试通过。
 - 当前未新增专门的安全单元测试，后续可补充针对签名校验与重放防护的独立测试用例。
+# MyBatis-Plus 日志统一收口任务
+- [x] 梳理各服务 MyBatis-Plus 日志配置现状，确认公共收口方案
+- [x] 在 `atlas-common-database` 中补充 MyBatis-Plus 日志默认自动配置
+- [x] 补充测试验证默认配置与服务侧覆盖行为
+- [x] 执行针对性构建/测试并记录结论
+
+## 评审记录
+
+- 已确认当前 MyBatis-Plus 配置分散在 `atlas-system` 与 `atlas-infra` 的服务配置中，公共模块更适合通过自动配置收口默认日志实现，而不是依赖公共 `application.yml`。
+- 已在 `atlas-common-database` 中新增 `MybatisPlusPropertiesCustomizer`，默认将 `mybatis-plus.configuration.log-impl` 收口为 `Slf4jImpl`，同时保留服务侧显式覆盖能力。
+- 已补充 `AtlasDataBaseAutoConfigurationTest`，验证“未配置时走统一默认值”和“业务显式配置时保持原值”两条路径。
+- 已执行 `mvn -pl atlas-common/atlas-common-database -am test -DskipTests=false`，测试通过。
