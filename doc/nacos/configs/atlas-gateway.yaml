@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: atlas-auth
+          uri: lb://atlas-auth
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+        - id: atlas-system
+          uri: lb://atlas-system
+          predicates:
+            - Path=/system/**
+          filters:
+            - StripPrefix=1
+        - id: atlas-infra
+          uri: lb://atlas-infra
+          predicates:
+            - Path=/infra/**
+          filters:
+            - StripPrefix=1
+        - id: atlas-monitor
+          uri: lb://atlas-monitor
+          predicates:
+            - Path=/monitor/**
+          filters:
+            - StripPrefix=1

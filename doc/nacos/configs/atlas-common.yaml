@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/atlas
+    username: root
+    password: bubua12
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: bubua12
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+atlas:
+  security:
+    gateway:
+      secret: atlas-gateway-signature-secret-change-me
+      allowed-skew-seconds: 300
+      nonce-ttl-seconds: 300
+    internal:
+      allowed-skew-seconds: 300
+      nonce-ttl-seconds: 300

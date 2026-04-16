@@ -1,40 +1,22 @@
-server:
-  port: 9300
 spring:
   application:
     name: atlas-infra
+  profiles:
+    active: ${ATLAS_PROFILE:dev}
+  config:
+    import:
+      - "optional:nacos:atlas-common.yaml?group=${ATLAS_NACOS_CONFIG_GROUP:ATLAS}&refreshEnabled=true"
+      - "optional:nacos:atlas-logging-${ATLAS_PROFILE:dev}.yaml?group=${ATLAS_NACOS_CONFIG_GROUP:ATLAS}&refreshEnabled=true"
+      - "optional:nacos:atlas-infra.yaml?group=${ATLAS_NACOS_CONFIG_GROUP:ATLAS}&refreshEnabled=true"
   cloud:
     nacos:
       discovery:
-        server-addr: ${ATLAS_NACOS_HOST:127.0.0.1}
+        server-addr: ${ATLAS_NACOS_HOST:127.0.0.1:8848}
         username: ${ATLAS_NACOS_USERNAME:nacos}
         password: ${ATLAS_NACOS_PASSWORD:nacos}
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${ATLAS_MYSQL_URL:jdbc:mysql://127.0.0.1:3306/atlas}
-    username: ${ATLAS_MYSQL_USERNAME:root}
-    password: ${ATLAS_MYSQL_PASSWORD:bubua12}
-  data:
-    redis:
-      host: ${ATLAS_REDIS_HOST:127.0.0.1}
-      port: ${ATLAS_REDIS_PORT:6379}
-      password: ${ATLAS_REDIS_PASSWORD:bubua12}
-  servlet:
-    multipart:
-      max-file-size: 50MB
-      max-request-size: 100MB
-mybatis-plus:
-  mapper-locations: classpath*:mapper/**/*.xml
-  configuration:
-    map-underscore-to-camel-case: true
-  global-config:
-    db-config:
-      id-type: auto
-atlas:
-  security:
-    gateway:
-      secret: ${ATLAS_GATEWAY_SIGNATURE_SECRET:atlas-gateway-signature-secret-change-me}
-      allowed-skew-seconds: 300
-      nonce-ttl-seconds: 300
-  file:
-    upload-path: /data/atlas/upload
+      config:
+        server-addr: ${ATLAS_NACOS_HOST:127.0.0.1:8848}
+        username: ${ATLAS_NACOS_USERNAME:nacos}
+        password: ${ATLAS_NACOS_PASSWORD:nacos}
+        namespace: ${ATLAS_NACOS_CONFIG_NAMESPACE:}
+        group: ${ATLAS_NACOS_CONFIG_GROUP:ATLAS}

@@ -36,3 +36,21 @@
 - 已在 `atlas-common-database` 中新增 `MybatisPlusPropertiesCustomizer`，默认将 `mybatis-plus.configuration.log-impl` 收口为 `Slf4jImpl`，同时保留服务侧显式覆盖能力。
 - 已补充 `AtlasDataBaseAutoConfigurationTest`，验证“未配置时走统一默认值”和“业务显式配置时保持原值”两条路径。
 - 已执行 `mvn -pl atlas-common/atlas-common-database -am test -DskipTests=false`，测试通过。
+
+# Nacos 配置中心与 SQL 日志分层任务
+- [x] 为各服务引入 Nacos Config，接入配置中心能力
+- [x] 将公共与环境级日志配置改造为 Nacos 远程配置模板
+- [x] 调整服务本地配置，保留本地默认值并通过 Nacos 控制 SQL 日志级别
+- [x] 执行构建验证并记录结果
+
+## 评审记录
+
+- 已为 `atlas-gateway`、`atlas-auth`、`atlas-system`、`atlas-infra`、`atlas-monitor` 引入 `spring-cloud-starter-alibaba-nacos-config`，并在本地 `application.yml` 中统一接入 `atlas-common.yaml`、`atlas-logging-${ATLAS_PROFILE}.yaml` 与服务级 DataId。
+- 已保留服务本地 `application.yml` 的基础兜底配置，Nacos 远程配置主要承接公共默认值、dev/prod 日志级别与服务级差异配置。
+- 已新增 `doc/nacos/configs` 下的 Nacos 配置模板，以及 `doc/nacos/import-nacos-config.ps1` 导入脚本，便于将仓库模板快速发布到配置中心。
+- 已验证 `atlas-system` 去掉 `StdOutImpl` 后，需通过 `logging.level.com.bubua12.atlas.system.mapper` 控制 SQL 日志输出；对应 dev/prod 模板已分别给出 `debug` 与 `info` 策略。
+- 已执行 `mvn -pl atlas-common/atlas-common-database,atlas-gateway,atlas-auth,atlas-system,atlas-infra,atlas-monitor -am test -DskipTests=false`，构建与测试通过。
+- 当前环境中的 Nacos 已存在 `atlas-common.yaml`、`atlas-logging-dev.yaml`、`atlas-auth.yaml` 等 DataId，但内容为空；本次未直接覆盖远程配置，需按需执行导入脚本或在控制台粘贴模板内容。
+- 已将公共 `MySQL`、`Redis` 配置补入 `doc/nacos/configs/atlas-common.yaml`，导入后可由 Nacos 统一管理；服务本地 `application.yml` 暂时保留同值兜底，避免远程配置缺失时无法启动。
+- 已按最新要求将 `doc/nacos/configs/atlas-common.yaml` 中的 MySQL/Redis 改为字面值配置，避免 Nacos 远程配置依赖环境变量展开。
+- 已进一步将各服务可远程化的端口、路由、签名配置、OAuth 配置、Knife4j、上传配置等迁入对应 Nacos DataId，本地 `application.yml` 仅保留连接 Nacos 所需的最小配置。

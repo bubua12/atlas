@@ -1,0 +1,7 @@
+server:
+  port: 9400
+
+spring:
+  boot:
+    admin:
+      context-path: /admin

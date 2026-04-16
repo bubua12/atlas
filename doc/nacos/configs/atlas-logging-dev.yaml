@@ -1,0 +1,3 @@
+logging:
+  level:
+    com.bubua12.atlas.system.mapper: debug

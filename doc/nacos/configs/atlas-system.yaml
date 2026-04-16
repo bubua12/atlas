@@ -1,0 +1,26 @@
+server:
+  port: 9200
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+atlas:
+  security:
+    internal:
+      service-name: atlas-system
+      trusted-services:
+        atlas-auth: atlas-auth-secret-bubua12
+
+knife4j:
+  enable: true
+  setting:
+    enable-footer-custom: true
+    footer-custom-content: "阿特拉斯 哈哈哈"
+  basic:
+    enable: true
+    username: root
+    password: bubua12
