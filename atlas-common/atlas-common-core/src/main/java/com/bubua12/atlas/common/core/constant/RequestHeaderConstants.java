@@ -19,7 +19,6 @@ public final class RequestHeaderConstants {
 
     public static final String X_USER_ID = "X-User-Id";
     public static final String X_USER_NAME = "X-User-Name";
-    public static final String X_USERNAME_NAME = X_USER_NAME;
     public static final String AUTHORIZATION = "Authorization";
 
     /**

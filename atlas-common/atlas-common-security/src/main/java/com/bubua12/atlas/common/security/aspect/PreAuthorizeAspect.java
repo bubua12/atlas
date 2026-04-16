@@ -21,6 +21,10 @@ import java.util.Set;
 
 /**
  * 权限校验切面。
+ *
+ * <p>它只负责“当前登录用户是否拥有某个权限标识”，
+ * 不负责证明请求是谁发起的。
+ * 请求身份的真实性来自网关验签、内部服务认证或 token/Redis 登录态恢复。
  */
 @Aspect
 @Component
@@ -67,6 +71,7 @@ public class PreAuthorizeAspect {
 
         String requiredPerm = requiresPermission.value();
         if (StrUtil.isBlank(requiredPerm)) {
+            // 没声明具体权限时不做额外限制，保持注解语义简单直接。
             return point.proceed();
         }
 

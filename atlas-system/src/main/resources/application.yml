@@ -41,7 +41,7 @@ atlas:
       allowed-skew-seconds: 300
       nonce-ttl-seconds: 300
       trusted-services:
-        atlas-auth: ${ATLAS_AUTH_INTERNAL_SECRET:atlas-auth-internal-secret-change-me}
+        atlas-auth: ${ATLAS_AUTH_INTERNAL_SECRET:atlas-auth-secret-bubua12}
 
 
 knife4j:

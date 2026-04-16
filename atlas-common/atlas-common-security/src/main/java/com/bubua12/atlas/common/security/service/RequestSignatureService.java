@@ -8,6 +8,7 @@ import com.bubua12.atlas.common.security.config.AtlasSecurityProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.Mac;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  * 2. internal：证明“当前 HTTP 请求来自某个受信任的内部服务”。
  * 两套协议共用签名能力，但使用不同的配置、nonce 前缀和校验入口，避免职责混在一起。
  */
+@Slf4j
 @RequiredArgsConstructor
 public class RequestSignatureService {
 
@@ -133,20 +135,20 @@ public class RequestSignatureService {
             String signature
     ) {
         if (!StringUtils.hasText(callerService)) {
-            throw new BusinessException("Missing internal caller service name", BusinessErrorCode.FORBIDDEN);
+            throw new BusinessException("[atlas-security]内部调用服务名不存在", BusinessErrorCode.FORBIDDEN);
         }
 
         String trustedSecret = securityProperties.getInternal().getTrustedServices().get(callerService);
         if (!StringUtils.hasText(trustedSecret)) {
-            throw new BusinessException("Untrusted internal service: " + callerService, BusinessErrorCode.FORBIDDEN);
+            throw new BusinessException("[atlas-security] 不信任的内部服务调用：" + callerService, BusinessErrorCode.FORBIDDEN);
         }
 
         validateTimestamp(timestamp, securityProperties.getInternal().getAllowedSkewSeconds(),
-                "Internal request timestamp is invalid or expired");
+                "[atlas-security] 内部请求时间过期或非法，请重试");
 
         String expected = hmacSha256(trustedSecret, canonicalInternalData(method, path, callerService, timestamp, nonce));
         if (!constantTimeEquals(expected, signature)) {
-            throw new BusinessException("Internal request signature verification failed", BusinessErrorCode.FORBIDDEN);
+            throw new BusinessException("[atlas-security] 内部服务调用签名校验失败", BusinessErrorCode.FORBIDDEN);
         }
 
         rememberNonce(
@@ -223,6 +225,7 @@ public class RequestSignatureService {
      * 签名比较使用常量时间算法，避免把比较过程变成侧信道。
      */
     private boolean constantTimeEquals(String expected, String actual) {
+        log.info("期望输入: {}，实际输入：{}", expected, actual);
         if (expected == null || actual == null) {
             return false;
         }
@@ -242,7 +245,7 @@ public class RequestSignatureService {
             byte[] digest = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);
         } catch (Exception e) {
-            throw new BusinessException("Failed to sign request", e, BusinessErrorCode.SYSTEM_ERROR);
+            throw new BusinessException("[atlas-security] 计算HMAC-SHA256签名失败", e, BusinessErrorCode.SYSTEM_ERROR);
         }
     }
 }

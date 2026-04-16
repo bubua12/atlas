@@ -27,7 +27,7 @@ atlas:
       nonce-ttl-seconds: 300
     internal:
       service-name: ${spring.application.name}
-      current-secret: ${ATLAS_AUTH_INTERNAL_SECRET:atlas-auth-internal-secret-change-me}
+      current-secret: ${ATLAS_AUTH_INTERNAL_SECRET:atlas-auth-secret-bubua12}
       allowed-skew-seconds: 300
       nonce-ttl-seconds: 300
   wecom:

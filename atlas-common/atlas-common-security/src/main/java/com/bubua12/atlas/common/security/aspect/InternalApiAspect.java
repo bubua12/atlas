@@ -7,6 +7,7 @@ import com.bubua12.atlas.common.security.annotation.InternalApi;
 import com.bubua12.atlas.common.security.service.RequestSignatureService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -26,6 +27,7 @@ import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.*;
  * <p>它只负责保护标注了 {@link InternalApi} 的接口，
  * 证明“当前请求来自受信任的内部服务”，不替代用户权限校验。
  */
+@Slf4j
 @Aspect
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
@@ -52,6 +54,8 @@ public class InternalApiAspect {
             throw new BusinessException("Missing internal service auth headers", BusinessErrorCode.FORBIDDEN);
         }
 
+        log.info("【服务被调用方-重新计算签名】计算签名参数：method: {}，path: {}，service: {}，time: {}, nonce: {}", request.getMethod(), request.getRequestURI(), callerService, timestamp, nonce);
+
         String verifiedCaller = requestSignatureService.verifyInternalRequest(
                 request.getMethod(),
                 request.getRequestURI(),
@@ -62,6 +66,7 @@ public class InternalApiAspect {
         );
 
         String[] allowedServices = internalApi.allowedServices();
+        // 注解白名单是第二层收口：先证明“这是内部服务”，再限制“必须是指定内部服务”。
         if (allowedServices.length > 0 && Arrays.stream(allowedServices).noneMatch(verifiedCaller::equals)) {
             throw new BusinessException("Internal service is not allowed: " + verifiedCaller, BusinessErrorCode.FORBIDDEN);
         }

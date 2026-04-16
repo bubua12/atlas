@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * `PreAuthorizeAspect` 配置。
+ *
+ * <p>单独拆一个配置类，主要是为了让权限切面按需装配，
+ * 同时避免 security 模块自动配置里堆太多与 MVC/AOP 相关的细节。
  */
 @Configuration
 @ConditionalOnClass(RedisService.class)
