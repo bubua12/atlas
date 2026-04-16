@@ -30,7 +30,7 @@ import java.lang.reflect.Method;
  * 数据权限拦截器
  *
  * @see DataScopeInnerInterceptor
- * @deprecated
+ * @deprecated 不适用，已过时
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +38,7 @@ import java.lang.reflect.Method;
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
 })
+@Deprecated
 public class DataScopeInterceptor implements Interceptor {
 
     private final DataScopeHandler dataScopeHandler;

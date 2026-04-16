@@ -81,7 +81,10 @@ public class AuthFilter implements GlobalFilter, Ordered {
                 GatewayUserContext.fromLoginUser(loginUser)
         );
         String timestamp = requestSignatureService.currentTimestamp();
+        // nonce = number used once
         String nonce = requestSignatureService.newNonce();
+
+        // 网关入口进行网关请求签名
         String signature = requestSignatureService.signGatewayRequest(
                 request.getMethod().name(),
                 forwardedPath,
@@ -90,6 +93,9 @@ public class AuthFilter implements GlobalFilter, Ordered {
                 nonce
         );
 
+        log.info("[atlas-gateway] 网关计算签名: {}", signature);
+
+        // 携带请求头进行下游
         ServerHttpRequest mutatedRequest = request.mutate()
                 .headers(headers -> {
                     // 无论客户端或上游是否带了这些头，最终都只允许网关自己签发的新值进入下游服务。
@@ -119,6 +125,9 @@ public class AuthFilter implements GlobalFilter, Ordered {
                 .build();
     }
 
+    /**
+     * 请求头清洗：会先移除外部传进来的这些安全头，再自己重建，所以前端就算乱传，也不等于下游真正收到。
+     */
     private void removeSecurityHeaders(HttpHeaders headers) {
         headers.remove(X_USER_ID);
         headers.remove(X_USER_NAME);

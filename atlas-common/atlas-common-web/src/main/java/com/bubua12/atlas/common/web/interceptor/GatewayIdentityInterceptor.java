@@ -7,6 +7,7 @@ import com.bubua12.atlas.common.security.service.RequestSignatureService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -18,17 +19,15 @@ import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.*;
  * <p>这个拦截器只做“验签”和“把可信结果塞进 request attribute”，
  * 不直接写 {@code SecurityContextHolder}，这样可以把“可信身份建立”与“线程上下文填充”拆成两步。
  */
+@Slf4j
 @RequiredArgsConstructor
 public class GatewayIdentityInterceptor implements HandlerInterceptor {
 
+    // 请求签名与验签服务
     private final RequestSignatureService requestSignatureService;
 
     @Override
-    public boolean preHandle(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull Object handler
-    ) {
+    public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         if (!hasGatewayIdentityAttempt(request)) {
             return true;
         }
@@ -39,9 +38,11 @@ public class GatewayIdentityInterceptor implements HandlerInterceptor {
         String nonce = request.getHeader(X_GATEWAY_NONCE);
         String signature = request.getHeader(X_GATEWAY_SIGNATURE);
         if (isMissing(payload, timestamp, nonce, signature)) {
-            throw new BusinessException("Missing gateway identity signature headers", BusinessErrorCode.UNAUTHORIZED);
+            throw new BusinessException("缺少网关身份签名标头，请检查请求是否来自网关", BusinessErrorCode.UNAUTHORIZED);
         }
 
+        // 验证网关签名
+        log.debug("【网关请求签名拦截器验证】参数：method: {}，path: {}，payload: {}，timestamp: {}，nonce: {}，signature: {}", request.getMethod(), request.getRequestURI(), payload, timestamp, nonce, signature);
         GatewayUserContext userContext = requestSignatureService.verifyGatewayRequest(
                 request.getMethod(),
                 request.getRequestURI(),
@@ -50,6 +51,7 @@ public class GatewayIdentityInterceptor implements HandlerInterceptor {
                 nonce,
                 signature
         );
+
         request.setAttribute(ATTR_GATEWAY_USER_CONTEXT, userContext);
         return true;
     }

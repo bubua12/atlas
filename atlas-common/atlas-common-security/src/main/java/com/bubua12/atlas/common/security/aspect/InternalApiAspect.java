@@ -54,7 +54,7 @@ public class InternalApiAspect {
             throw new BusinessException("Missing internal service auth headers", BusinessErrorCode.FORBIDDEN);
         }
 
-        log.info("【服务被调用方-重新计算签名】计算签名参数：method: {}，path: {}，service: {}，time: {}, nonce: {}", request.getMethod(), request.getRequestURI(), callerService, timestamp, nonce);
+        log.debug("【服务被调用方-重新计算签名】计算签名参数：method: {}，path: {}，service: {}，time: {}, nonce: {}", request.getMethod(), request.getRequestURI(), callerService, timestamp, nonce);
 
         String verifiedCaller = requestSignatureService.verifyInternalRequest(
                 request.getMethod(),

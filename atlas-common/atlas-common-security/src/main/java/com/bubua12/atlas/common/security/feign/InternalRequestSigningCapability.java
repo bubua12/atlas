@@ -50,7 +50,7 @@ public class InternalRequestSigningCapability implements Capability {
         String nonce = requestSignatureService.newNonce();
         String path = extractSigningPath(request.url());
 
-        log.info("【请求方-携带签名】计算签名参数：method: {}，path: {}，service: {}，time: {}, nonce: {}",
+        log.debug("【请求方-携带签名】计算签名参数：method: {}，path: {}，service: {}，time: {}, nonce: {}",
                 request.httpMethod().name(), path, serviceName, timestamp, nonce);
 
         String signature = requestSignatureService.signInternalRequest(

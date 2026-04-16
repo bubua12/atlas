@@ -79,29 +79,26 @@ public class RequestSignatureService {
         }
     }
 
+    /**
+     * 对网关请求进行签名
+     */
     public String signGatewayRequest(String method, String path, String payload, String timestamp, String nonce) {
         String secret = securityProperties.getGateway().getSecret();
-        assertSecret(secret, "Gateway signature secret is missing");
+        assertSecret(secret, "网关签名密钥不存在");
         return hmacSha256(secret, canonicalGatewayData(method, path, payload, timestamp, nonce));
     }
 
     /**
      * 网关验签成功后，返回下游真正可以信任的用户上下文。
      */
-    public GatewayUserContext verifyGatewayRequest(
-            String method,
-            String path,
-            String payload,
-            String timestamp,
-            String nonce,
-            String signature
-    ) {
+    public GatewayUserContext verifyGatewayRequest(String method, String path, String payload, String timestamp, String nonce, String signature) {
         validateTimestamp(timestamp, securityProperties.getGateway().getAllowedSkewSeconds(),
-                "Gateway request timestamp is invalid or expired");
+                "网关请求时间非法或已过期");
 
+        // 根据参数重新进行计算签名并比较
         String expected = signGatewayRequest(method, path, payload, timestamp, nonce);
-        if (!constantTimeEquals(expected, signature)) {
-            throw new BusinessException("Gateway signature verification failed", BusinessErrorCode.UNAUTHORIZED);
+        if (signCompareFail(expected, signature)) {
+            throw new BusinessException("下游请求网关签名验证失败", BusinessErrorCode.UNAUTHORIZED);
         }
 
         // gateway 和 internal 分开记 nonce，避免两条认证链互相污染重放记录。
@@ -147,7 +144,7 @@ public class RequestSignatureService {
                 "[atlas-security] 内部请求时间过期或非法，请重试");
 
         String expected = hmacSha256(trustedSecret, canonicalInternalData(method, path, callerService, timestamp, nonce));
-        if (!constantTimeEquals(expected, signature)) {
+        if (signCompareFail(expected, signature)) {
             throw new BusinessException("[atlas-security] 内部服务调用签名校验失败", BusinessErrorCode.FORBIDDEN);
         }
 
@@ -224,12 +221,11 @@ public class RequestSignatureService {
     /**
      * 签名比较使用常量时间算法，避免把比较过程变成侧信道。
      */
-    private boolean constantTimeEquals(String expected, String actual) {
-        log.info("期望输入: {}，实际输入：{}", expected, actual);
+    private boolean signCompareFail(String expected, String actual) {
         if (expected == null || actual == null) {
-            return false;
+            return true;
         }
-        return MessageDigest.isEqual(
+        return !MessageDigest.isEqual(
                 expected.getBytes(StandardCharsets.UTF_8),
                 actual.getBytes(StandardCharsets.UTF_8)
         );
