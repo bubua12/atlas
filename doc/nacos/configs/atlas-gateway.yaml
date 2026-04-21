@@ -1,6 +1,15 @@
 server:
   port: 8080
 
+atlas:
+  gateway:
+    whitelist:
+      - /auth/login
+      - /auth/captcha
+      - /auth/register
+      - /auth/wecom/config
+      - /system/dict/type/**
+
 spring:
   cloud:
     gateway:

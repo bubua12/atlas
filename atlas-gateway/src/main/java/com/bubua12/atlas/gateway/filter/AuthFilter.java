@@ -4,6 +4,7 @@ import com.bubua12.atlas.common.core.model.GatewayUserContext;
 import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.security.service.RequestSignatureService;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
+import com.bubua12.atlas.gateway.config.GatewayWhitelistProperties;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -36,15 +38,13 @@ import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.*;
 @Component
 public class AuthFilter implements GlobalFilter, Ordered {
 
-    private static final List<String> WHITELIST = List.of(
-            "/auth/login",
-            "/auth/captcha",
-            "/auth/register",
-            "/auth/wecom/config"
-    );
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     @Resource
     private JwtUtils jwtUtils;
+
+    @Resource
+    private GatewayWhitelistProperties gatewayWhitelistProperties;
 
     @Resource
     private RequestSignatureService requestSignatureService;
@@ -109,7 +109,14 @@ public class AuthFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isWhitelisted(String path) {
-        return WHITELIST.stream().anyMatch(path::startsWith);
+        List<String> whitelist = gatewayWhitelistProperties.getWhitelist();
+        log.debug("[网关白名单]当前系统配置白名单：{}", whitelist);
+        if (whitelist == null || whitelist.isEmpty()) {
+            return false;
+        }
+        return whitelist.stream()
+                .filter(pattern -> pattern != null && !pattern.isBlank())
+                .anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
     }
 
     /**
