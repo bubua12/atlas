@@ -5,8 +5,7 @@ spring:
     active: ${ATLAS_PROFILE:dev}
   config:
     import:
-      - "optional:nacos:atlas-common.yaml?group=${ATLAS_NACOS_CONFIG_GROUP:ATLAS}&refreshEnabled=true"
-      - "optional:nacos:atlas-logging-${ATLAS_PROFILE:dev}.yaml?group=${ATLAS_NACOS_CONFIG_GROUP:ATLAS}&refreshEnabled=true"
+      - "optional:nacos:atlas-common-${ATLAS_PROFILE:dev}.yaml?group=${ATLAS_NACOS_CONFIG_GROUP:ATLAS}&refreshEnabled=true"
       - "optional:nacos:atlas-monitor.yaml?group=${ATLAS_NACOS_CONFIG_GROUP:ATLAS}&refreshEnabled=true"
   cloud:
     nacos:

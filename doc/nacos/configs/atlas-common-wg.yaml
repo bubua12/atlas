@@ -1,0 +1,59 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.0.8.132:3306/atlas
+    username: root
+    password: bubua12
+  data:
+    redis:
+      host: 10.0.8.132
+      port: 6379
+      password: bubua12
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 3000
+            readTimeout: 5000
+      circuitbreaker:
+        enabled: true
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+atlas:
+  security:
+    gateway:
+      secret: atlas-gateway-signature-secret-change-me
+      allowed-skew-seconds: 300
+    internal:
+      allowed-skew-seconds: 300
+
+logging:
+  level:
+    com.bubua12.atlas.system.mapper: debug
+
+bubua12:
+  trace:
+    starter:
+      enabled: false
+      feign-metrics: true
+      logging-mdc: true
+      redis-tracing: true
+      redisson-tracing: true
+      datasource-tracing: true
+      mongodb-tracing: true
+      kafka-tracing: true
+      rabbitmq-tracing: true
+      logging-pattern-level: "traceId=%mdc{traceId} spanId=%mdc{spanId} %5p"
+      otlp:
+        enabled: true
+        endpoint: http://10.0.8.200:32043
+        timeout: 10s
+      sampling-probability: 1.0
