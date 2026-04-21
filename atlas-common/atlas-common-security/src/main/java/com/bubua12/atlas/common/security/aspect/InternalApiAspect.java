@@ -48,20 +48,18 @@ public class InternalApiAspect {
         // 这里故意要求整套服务认证头齐全，避免仅靠一个服务名明文头就冒充内部调用。
         String callerService = request.getHeader(X_INTERNAL_SERVICE);
         String timestamp = request.getHeader(X_INTERNAL_TIMESTAMP);
-        String nonce = request.getHeader(X_INTERNAL_NONCE);
         String signature = request.getHeader(X_INTERNAL_SIGNATURE);
-        if (isMissing(callerService, timestamp, nonce, signature)) {
+        if (isMissing(callerService, timestamp, signature)) {
             throw new BusinessException("Missing internal service auth headers", BusinessErrorCode.FORBIDDEN);
         }
 
-        log.debug("【服务被调用方-重新计算签名】计算签名参数：method: {}，path: {}，service: {}，time: {}, nonce: {}", request.getMethod(), request.getRequestURI(), callerService, timestamp, nonce);
+        log.debug("【服务被调用方-重新计算签名】计算签名参数：method: {}，path: {}，service: {}，time: {}", request.getMethod(), request.getRequestURI(), callerService, timestamp);
 
         String verifiedCaller = requestSignatureService.verifyInternalRequest(
                 request.getMethod(),
                 request.getRequestURI(),
                 callerService,
                 timestamp,
-                nonce,
                 signature
         );
 

@@ -3,7 +3,7 @@ package com.bubua12.atlas.monitor.service;
 import com.bubua12.atlas.common.core.model.LoginUser;
 import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.utils.JwtUtils;
-import com.bubua12.atlas.monitor.vo.OnlineUserVO;
+import com.bubua12.atlas.monitor.entity.vo.OnlineUserVO;
 import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
 /**
  * 菜单管理服务实现（支持树形结构查询）
  */
@@ -31,13 +32,7 @@ public class SysMenuServiceImpl implements SysMenuService {
     public List<String> getPermsByUserId(Long userId) {
         // 管理员拥有所有权限
         if (Long.valueOf(1L).equals(userId)) {
-            return sysMenuMapper.selectList(new LambdaQueryWrapper<SysMenu>()
-                            .eq(SysMenu::getStatus, 0)
-                            .isNotNull(SysMenu::getPerms)
-                            .ne(SysMenu::getPerms, ""))
-                    .stream()
-                    .map(SysMenu::getPerms)
-                    .collect(Collectors.toList());
+            return List.of("*:*:*");
         }
         return sysMenuMapper.selectPermsByUserId(userId);
     }

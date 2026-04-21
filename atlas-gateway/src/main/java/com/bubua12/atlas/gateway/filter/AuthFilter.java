@@ -54,6 +54,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
+        // 1、白名单接口清单放行
         if (isWhitelisted(path)) {
             // 白名单接口不做登录校验，但仍然要清洗掉外部伪造的安全头，避免脏数据流到下游。
             return chain.filter(exchange.mutate()
@@ -61,6 +62,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
                     .build());
         }
 
+        // 2、token校验，失败则返回未认证
         String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (token == null || token.isBlank()) {
             return unauthorizedResponse(exchange.getResponse());
@@ -70,30 +72,22 @@ public class AuthFilter implements GlobalFilter, Ordered {
             return unauthorizedResponse(exchange.getResponse());
         }
 
+        // 3、读取 LoginUser
         LoginUser loginUser = jwtUtils.getLoginUser(token);
         if (loginUser == null) {
             return unauthorizedResponse(exchange.getResponse());
         }
 
-        // gateway 签名的 path 必须与下游最终收到的 path 一致，否则下游验签一定失败。
+        // 4、计算签名
+        String methodName = request.getMethod().name();
         String forwardedPath = toForwardedPath(path);
-        String payload = requestSignatureService.encodeGatewayUserContext(
-                GatewayUserContext.fromLoginUser(loginUser)
-        );
+        String payload = requestSignatureService.encodeGatewayUserContext(GatewayUserContext.fromLoginUser(loginUser));
         String timestamp = requestSignatureService.currentTimestamp();
-        // nonce = number used once
-        String nonce = requestSignatureService.newNonce();
 
         // 网关入口进行网关请求签名
-        String signature = requestSignatureService.signGatewayRequest(
-                request.getMethod().name(),
-                forwardedPath,
-                payload,
-                timestamp,
-                nonce
-        );
+        String signature = requestSignatureService.signGatewayRequest(methodName, forwardedPath, payload, timestamp);
 
-        log.info("[atlas-gateway] 网关计算签名: {}", signature);
+        log.debug("[atlas-gateway] 网关计算签名: {}", signature);
 
         // 携带请求头进行下游
         ServerHttpRequest mutatedRequest = request.mutate()
@@ -102,7 +96,6 @@ public class AuthFilter implements GlobalFilter, Ordered {
                     removeSecurityHeaders(headers);
                     headers.set(X_LOGIN_USER, payload);
                     headers.set(X_GATEWAY_TIMESTAMP, timestamp);
-                    headers.set(X_GATEWAY_NONCE, nonce);
                     headers.set(X_GATEWAY_SIGNATURE, signature);
                 })
                 .build();
@@ -119,6 +112,9 @@ public class AuthFilter implements GlobalFilter, Ordered {
         return WHITELIST.stream().anyMatch(path::startsWith);
     }
 
+    /**
+     * 请求头清洗
+     */
     private ServerHttpRequest sanitizeSecurityHeaders(ServerHttpRequest request) {
         return request.mutate()
                 .headers(this::removeSecurityHeaders)
@@ -127,13 +123,13 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
     /**
      * 请求头清洗：会先移除外部传进来的这些安全头，再自己重建，所以前端就算乱传，也不等于下游真正收到。
+     * 不管客户端自己带了什么安全头，统统作废，只认网关重新签发的。
      */
     private void removeSecurityHeaders(HttpHeaders headers) {
         headers.remove(X_USER_ID);
         headers.remove(X_USER_NAME);
         headers.remove(X_LOGIN_USER);
         headers.remove(X_GATEWAY_TIMESTAMP);
-        headers.remove(X_GATEWAY_NONCE);
         headers.remove(X_GATEWAY_SIGNATURE);
         headers.remove(X_INTERNAL_SERVICE);
         headers.remove(X_INTERNAL_TIMESTAMP);

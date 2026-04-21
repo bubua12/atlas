@@ -123,13 +123,14 @@ public class AuthServiceImpl implements AuthService {
         Long userId = jwtUtils.getUserId(rawToken);
         String username = jwtUtils.getUsername(rawToken);
         LoginUser loginUser = redisService.get(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
-        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
 
         String newToken = jwtUtils.generateToken(userId, username);
         if (loginUser != null) {
             loginUser.setToken(newToken);
             redisService.set(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + newToken, loginUser, expiration, TimeUnit.SECONDS);
         }
+        // 先写新 token 再删旧 token，消除并发刷新时的窗口期 (删除旧 Token 和写入新 Token 之间有一个时间窗口。如果这期间有并发请求进来，旧 Token 已失效、新 Token还没写入，用户会被踢下线。)
+        redisService.delete(AuthCacheConstant.AUTH_TOKEN_CACHE_PREFIX + rawToken);
         LoginVO loginVO = new LoginVO();
         loginVO.setToken(newToken);
         loginVO.setExpiresIn(expiration);

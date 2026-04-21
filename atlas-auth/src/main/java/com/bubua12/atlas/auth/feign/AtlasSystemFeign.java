@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
  * @author bubua12
  * @since 2026/02/27 22:20
  */
-@FeignClient(value = "atlas-system", path = "/user")
+@FeignClient(value = "atlas-system", path = "/user", fallback = AtlasSystemFeignFallback.class)
 public interface AtlasSystemFeign {
 
     /**

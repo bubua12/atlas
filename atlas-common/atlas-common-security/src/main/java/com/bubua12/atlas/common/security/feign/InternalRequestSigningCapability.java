@@ -46,25 +46,23 @@ public class InternalRequestSigningCapability implements Capability {
             return request;
         }
 
+        // internal 链路只保留时间窗口和签名，避免每次服务调用都把 Redis 写入变成认证前提。
         String timestamp = requestSignatureService.currentTimestamp();
-        String nonce = requestSignatureService.newNonce();
         String path = extractSigningPath(request.url());
 
-        log.debug("【请求方-携带签名】计算签名参数：method: {}，path: {}，service: {}，time: {}, nonce: {}",
-                request.httpMethod().name(), path, serviceName, timestamp, nonce);
+        log.debug("【请求方-携带签名】计算签名参数：method: {}，path: {}，service: {}，time: {}",
+                request.httpMethod().name(), path, serviceName, timestamp);
 
         String signature = requestSignatureService.signInternalRequest(
                 request.httpMethod().name(),
                 path,
                 serviceName,
-                timestamp,
-                nonce
+                timestamp
         );
 
         Map<String, Collection<String>> headers = new LinkedHashMap<>(request.headers());
         headers.put(RequestHeaderConstants.X_INTERNAL_SERVICE, List.of(serviceName));
         headers.put(RequestHeaderConstants.X_INTERNAL_TIMESTAMP, List.of(timestamp));
-        headers.put(RequestHeaderConstants.X_INTERNAL_NONCE, List.of(nonce));
         headers.put(RequestHeaderConstants.X_INTERNAL_SIGNATURE, List.of(signature));
 
         return Request.create(

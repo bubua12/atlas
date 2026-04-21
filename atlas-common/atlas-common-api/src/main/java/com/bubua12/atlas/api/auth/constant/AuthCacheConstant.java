@@ -32,4 +32,9 @@ public interface AuthCacheConstant {
      * Redis中登录令牌的key前缀
      */
     String AUTH_TOKEN_CACHE_PREFIX = "auth:token:";
+
+    /**
+     * 权限变更通知 channel
+     */
+    String PERMISSION_CHANGE_CHANNEL = "auth:permission:change";
 }

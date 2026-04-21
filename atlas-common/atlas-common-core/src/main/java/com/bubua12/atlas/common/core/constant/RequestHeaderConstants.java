@@ -26,7 +26,6 @@ public final class RequestHeaderConstants {
      */
     public static final String X_LOGIN_USER = "X-Login-User";
     public static final String X_GATEWAY_TIMESTAMP = "X-Gateway-Timestamp";
-    public static final String X_GATEWAY_NONCE = "X-Gateway-Nonce";
     public static final String X_GATEWAY_SIGNATURE = "X-Gateway-Signature";
 
     /**

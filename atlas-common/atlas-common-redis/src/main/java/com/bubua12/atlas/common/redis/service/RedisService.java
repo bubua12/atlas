@@ -53,4 +53,8 @@ public class RedisService {
     public Boolean setIfAbsent(String key, Object value, long timeout, TimeUnit unit) {
         return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit);
     }
+
+    public Long getExpire(String key) {
+        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
+    }
 }

@@ -1,6 +1,5 @@
 package com.bubua12.atlas.common.security.config;
 
-import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.aspect.InternalApiAspect;
 import com.bubua12.atlas.common.security.feign.InternalRequestSigningCapability;
 import com.bubua12.atlas.common.security.service.RequestSignatureService;
@@ -37,13 +36,12 @@ public class AtlasSecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public RequestSignatureService requestSignatureService(
-            RedisService redisService,
             AtlasSecurityProperties securityProperties,
             ObjectProvider<ObjectMapper> objectMapperProvider
     ) {
         // 优先复用 Spring 上下文中的 ObjectMapper，避免签名载荷序列化规则与全局配置漂移。
         ObjectMapper objectMapper = objectMapperProvider.getIfAvailable(ObjectMapper::new);
-        return new RequestSignatureService(redisService, objectMapper, securityProperties);
+        return new RequestSignatureService(objectMapper, securityProperties);
     }
 
     @Bean

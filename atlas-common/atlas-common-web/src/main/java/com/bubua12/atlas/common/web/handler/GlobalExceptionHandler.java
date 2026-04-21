@@ -4,6 +4,7 @@ import com.bubua12.atlas.common.core.exception.BusinessErrorCode;
 import com.bubua12.atlas.common.core.exception.BusinessException;
 import com.bubua12.atlas.common.core.exception.SystemErrorCode;
 import com.bubua12.atlas.common.core.result.CommonResult;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * 全局异常处理器
+ * 全局异常处理器 fixme 目前感觉有点乱，不好把控
  * 统一捕获业务异常、参数校验异常和系统异常，返回标准 CommonResult 响应。
  */
 @Slf4j
@@ -40,6 +41,12 @@ public class GlobalExceptionHandler {
                 : SystemErrorCode.PARAM_ERROR.getMessage();
         log.error("参数绑定异常: {}", message);
         return CommonResult.fail(SystemErrorCode.PARAM_ERROR.getCode(), message);
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public CommonResult<Void> handleFeignException(FeignException e) {
+        log.error("远程调用异常: {}", e.getMessage(), e);
+        return CommonResult.fail(BusinessErrorCode.SYSTEM_ERROR.getCode(), "服务暂不可用，请稍后重试");
     }
 
     @ExceptionHandler(Exception.class)

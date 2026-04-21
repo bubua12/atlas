@@ -18,6 +18,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final RequestSignatureService requestSignatureService;
 
+    /**
+     * 注册拦截器
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 先验签，再建立线程上下文；顺序反过来就会重新把未经验证的身份写回 SecurityContextHolder。
@@ -30,6 +33,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .order(1);
     }
 
+    /**
+     * fixme 学习这块内容
+     *
+     * @param resolvers initially an empty list
+     * @see ClientIpArgumentResolver
+     */
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         // @ClientIp 这类参数解析依然保留，不受新增安全链路影响。

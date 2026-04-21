@@ -3,7 +3,6 @@ package com.bubua12.atlas.common.security.service;
 import com.bubua12.atlas.common.core.exception.BusinessErrorCode;
 import com.bubua12.atlas.common.core.exception.BusinessException;
 import com.bubua12.atlas.common.core.model.GatewayUserContext;
-import com.bubua12.atlas.common.redis.service.RedisService;
 import com.bubua12.atlas.common.security.config.AtlasSecurityProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +17,6 @@ import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 请求签名与验签服务。
@@ -27,17 +24,14 @@ import java.util.concurrent.TimeUnit;
  * <p>这里统一封装了两套协议：
  * 1. gateway：证明“当前用户身份是网关验过 token 后签发的”；
  * 2. internal：证明“当前 HTTP 请求来自某个受信任的内部服务”。
- * 两套协议共用签名能力，但使用不同的配置、nonce 前缀和校验入口，避免职责混在一起。
+ * 两套协议现在都只保留“时间窗口 + 签名”校验，避免把 Redis 变成认证链路上的强依赖。
  */
 @Slf4j
 @RequiredArgsConstructor
 public class RequestSignatureService {
 
     private static final String HMAC_SHA_256 = "HmacSHA256";
-    private static final String GATEWAY_NONCE_KEY_PREFIX = "atlas:security:gateway:nonce:";
-    private static final String INTERNAL_NONCE_KEY_PREFIX = "atlas:security:internal:nonce:";
 
-    private final RedisService redisService;
     private final ObjectMapper objectMapper;
     private final AtlasSecurityProperties securityProperties;
 
@@ -49,13 +43,6 @@ public class RequestSignatureService {
     }
 
     /**
-     * 使用随机 nonce 把“同一个签名包反复重放”转成可检测事件。
-     */
-    public String newNonce() {
-        return UUID.randomUUID().toString().replace("-", "");
-    }
-
-    /**
      * 网关签名载荷用 URL safe Base64，避免经过代理或日志时被额外转义。
      */
     public String encodeGatewayUserContext(GatewayUserContext userContext) {
@@ -63,7 +50,7 @@ public class RequestSignatureService {
             byte[] bytes = objectMapper.writeValueAsBytes(userContext);
             return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         } catch (JsonProcessingException e) {
-            throw new BusinessException("Failed to serialize gateway user context", e, BusinessErrorCode.SYSTEM_ERROR);
+            throw new BusinessException("序列化网关身份信息失败", e, BusinessErrorCode.SYSTEM_ERROR);
         }
     }
 
@@ -81,43 +68,42 @@ public class RequestSignatureService {
 
     /**
      * 对网关请求进行签名
+     *
+     * @param method    method+path、确保签名不能脱离原始请求上下文复用
+     * @param path      method+path、确保签名不能脱离原始请求上下文复用
+     * @param payload   确保用户身份内容不能被改
+     * @param timestamp 确保请求不是无限期可复用
+     * @return hmacSha256签名
      */
-    public String signGatewayRequest(String method, String path, String payload, String timestamp, String nonce) {
+    public String signGatewayRequest(String method, String path, String payload, String timestamp) {
         String secret = securityProperties.getGateway().getSecret();
         assertSecret(secret, "网关签名密钥不存在");
-        return hmacSha256(secret, canonicalGatewayData(method, path, payload, timestamp, nonce));
+        return hmacSha256(secret, canonicalGatewayData(method, path, payload, timestamp));
     }
 
     /**
      * 网关验签成功后，返回下游真正可以信任的用户上下文。
      */
-    public GatewayUserContext verifyGatewayRequest(String method, String path, String payload, String timestamp, String nonce, String signature) {
+    public GatewayUserContext verifyGatewayRequest(String method, String path, String payload, String timestamp, String signature) {
         validateTimestamp(timestamp, securityProperties.getGateway().getAllowedSkewSeconds(),
-                "网关请求时间非法或已过期");
+                "网关请求时间非法或请求已过期");
 
-        // 根据参数重新进行计算签名并比较
-        String expected = signGatewayRequest(method, path, payload, timestamp, nonce);
+        // 使用网关一致的签名计算算法，计算后进行验证
+        String expected = signGatewayRequest(method, path, payload, timestamp);
         if (signCompareFail(expected, signature)) {
             throw new BusinessException("下游请求网关签名验证失败", BusinessErrorCode.UNAUTHORIZED);
         }
 
-        // gateway 和 internal 分开记 nonce，避免两条认证链互相污染重放记录。
-        rememberNonce(
-                GATEWAY_NONCE_KEY_PREFIX + nonce,
-                securityProperties.getGateway().getNonceTtlSeconds(),
-                "Duplicate gateway request detected"
-        );
-
         return decodeGatewayUserContext(payload);
     }
 
-    public String signInternalRequest(String method, String path, String callerService, String timestamp, String nonce) {
+    public String signInternalRequest(String method, String path, String callerService, String timestamp) {
         String secret = securityProperties.getInternal().getCurrentSecret();
         assertSecret(secret, "Internal caller secret is missing");
         if (!StringUtils.hasText(callerService)) {
             throw new BusinessException("Internal caller service name is missing", BusinessErrorCode.SYSTEM_ERROR);
         }
-        return hmacSha256(secret, canonicalInternalData(method, path, callerService, timestamp, nonce));
+        return hmacSha256(secret, canonicalInternalData(method, path, callerService, timestamp));
     }
 
     /**
@@ -128,7 +114,6 @@ public class RequestSignatureService {
             String path,
             String callerService,
             String timestamp,
-            String nonce,
             String signature
     ) {
         if (!StringUtils.hasText(callerService)) {
@@ -143,26 +128,21 @@ public class RequestSignatureService {
         validateTimestamp(timestamp, securityProperties.getInternal().getAllowedSkewSeconds(),
                 "[atlas-security] 内部请求时间过期或非法，请重试");
 
-        String expected = hmacSha256(trustedSecret, canonicalInternalData(method, path, callerService, timestamp, nonce));
+        String expected = hmacSha256(trustedSecret, canonicalInternalData(method, path, callerService, timestamp));
         if (signCompareFail(expected, signature)) {
             throw new BusinessException("[atlas-security] 内部服务调用签名校验失败", BusinessErrorCode.FORBIDDEN);
         }
 
-        rememberNonce(
-                INTERNAL_NONCE_KEY_PREFIX + callerService + ":" + nonce,
-                securityProperties.getInternal().getNonceTtlSeconds(),
-                "Duplicate internal request detected"
-        );
         return callerService;
     }
 
-    private void rememberNonce(String nonceKey, long ttlSeconds, String message) {
-        Boolean success = redisService.setIfAbsent(nonceKey, 1, ttlSeconds, TimeUnit.SECONDS);
-        if (!Boolean.TRUE.equals(success)) {
-            throw new BusinessException(message, BusinessErrorCode.UNAUTHORIZED);
-        }
-    }
-
+    /**
+     * 验证请求时间窗口
+     *
+     * @param timestamp
+     * @param allowedSkewSeconds
+     * @param message
+     */
     private void validateTimestamp(String timestamp, long allowedSkewSeconds, String message) {
         try {
             long requestMillis = Long.parseLong(timestamp);
@@ -182,25 +162,23 @@ public class RequestSignatureService {
     }
 
     /**
-     * method + path + payload + timestamp + nonce 必须保持完全一致，任何一项被篡改都会导致验签失败。
+     * method + path + payload + timestamp 必须保持完全一致，任何一项被篡改都会导致验签失败。
      */
-    private String canonicalGatewayData(String method, String path, String payload, String timestamp, String nonce) {
+    private String canonicalGatewayData(String method, String path, String payload, String timestamp) {
         return normalizeMethod(method) + "\n"
                 + normalizePath(path) + "\n"
                 + payload + "\n"
-                + timestamp + "\n"
-                + nonce;
+                + timestamp;
     }
 
     /**
      * 内部调用签名里不放用户数据，只放调用方服务名，避免把两类身份语义混用。
      */
-    private String canonicalInternalData(String method, String path, String callerService, String timestamp, String nonce) {
+    private String canonicalInternalData(String method, String path, String callerService, String timestamp) {
         return normalizeMethod(method) + "\n"
                 + normalizePath(path) + "\n"
                 + callerService + "\n"
-                + timestamp + "\n"
-                + nonce;
+                + timestamp;
     }
 
     private String normalizeMethod(String method) {

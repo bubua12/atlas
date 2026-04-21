@@ -63,21 +63,15 @@ public class PreAuthorizeAspect {
             throw new BusinessException(BusinessErrorCode.UNAUTHORIZED);
         }
 
-        Long userId = loginUser.getUserId();
-        if (Long.valueOf(1L).equals(userId)) {
-            // 超级管理员约定继续保留，避免影响既有权限模型。
-            return point.proceed();
-        }
-
         String requiredPerm = requiresPermission.value();
         if (StrUtil.isBlank(requiredPerm)) {
-            // 没声明具体权限时不做额外限制，保持注解语义简单直接。
             return point.proceed();
         }
 
         Set<String> userPerms = loginUser.getPermissions();
-        if (CollectionUtil.isEmpty(userPerms) || !userPerms.contains(requiredPerm)) {
-            log.warn("用户 {} 权限不足，需要权限 {}，已有权限 {}", userId, requiredPerm, userPerms);
+        if (CollectionUtil.isEmpty(userPerms)
+                || (!userPerms.contains("*:*:*") && !userPerms.contains(requiredPerm))) {
+            log.warn("用户 {} 权限不足，需要权限 {}，已有权限 {}", loginUser.getUserId(), requiredPerm, userPerms);
             throw new BusinessException(BusinessErrorCode.FORBIDDEN);
         }
 

@@ -15,3 +15,22 @@ atlas:
     client-id: 4079653655
     client-secret: 65ff2683f546e0848531842c27793d59
     redirect-uri: https://atlas.bubua12.com/auth/success
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+    instances:
+      atlas-system:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+    instances:
+      atlas-system:
+        baseConfig: default

@@ -12,7 +12,7 @@ import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.ATTR
 import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.AUTHORIZATION;
 
 /**
- * 用户上下文拦截器。
+ * 用户上下文拦截器。负责把前面已经验证过的可信用户上下文，恢复成当前线程可用的登录态
  *
  * <p>这个拦截器只消费已经被 {@link GatewayIdentityInterceptor} 验证过的 request attribute，
  * 不再直接信任原始请求头里的用户信息，从而把“可伪造输入”和“可信身份上下文”隔离开。
@@ -20,11 +20,7 @@ import static com.bubua12.atlas.common.core.constant.RequestHeaderConstants.AUTH
 public class UserContextInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull Object handler
-    ) {
+    public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         String token = request.getHeader(AUTHORIZATION);
         if (token != null && !token.isBlank()) {
             // 保留原始 Authorization，方便现有权限切面和兼容逻辑继续工作。
@@ -46,13 +42,11 @@ public class UserContextInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    /**
+     * 请求结束后执行
+     */
     @Override
-    public void afterCompletion(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull Object handler,
-            Exception ex
-    ) {
+    public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler, Exception ex) {
         // ThreadLocal 生命周期必须跟随一次 HTTP 请求结束，避免线程复用时串用户。
         SecurityContextHolder.clear();
     }

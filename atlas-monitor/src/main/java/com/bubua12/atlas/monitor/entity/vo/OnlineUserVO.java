@@ -1,4 +1,4 @@
-package com.bubua12.atlas.monitor.vo;
+package com.bubua12.atlas.monitor.entity.vo;
 
 import lombok.Data;
 

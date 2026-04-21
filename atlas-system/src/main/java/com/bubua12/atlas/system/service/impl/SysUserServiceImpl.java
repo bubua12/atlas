@@ -3,14 +3,17 @@ package com.bubua12.atlas.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bubua12.atlas.api.auth.constant.AuthCacheConstant;
 import com.bubua12.atlas.common.core.domain.PageQuery;
 import com.bubua12.atlas.common.core.utils.PasswordUtils;
 import com.bubua12.atlas.common.log.annotation.OperLog;
+import com.bubua12.atlas.system.mapper.SysMenuMapper;
 import com.bubua12.atlas.system.mapper.SysUserMapper;
 import com.bubua12.atlas.system.repository.SysUser;
 import com.bubua12.atlas.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,8 @@ import java.util.List;
 public class SysUserServiceImpl implements SysUserService {
 
     private final SysUserMapper sysUserMapper;
+    private final SysMenuMapper sysMenuMapper;
+    private final StringRedisTemplate stringRedisTemplate;
 
     /**
      * 分页查询用户列表，查询过程中会应用数据权限过滤。
@@ -152,12 +157,29 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void assignRoles(Long userId, List<Long> roleIds) {
-        // 1、根据用户ID删除用户角色表的关系
         sysUserMapper.deleteUserRoles(userId);
-        // 2、配置新用户角色关系
         if (CollectionUtils.isNotEmpty(roleIds)) {
             sysUserMapper.insertUserRoles(userId, roleIds);
         }
+        publishLoginUserRefresh(userId);
+    }
+
+    /**
+     * 角色变更后把“权限 + 数据权限 + 部门”一次性推给 auth，保证已登录会话静默刷新。
+     */
+    private void publishLoginUserRefresh(Long userId) {
+        SysUser user = sysUserMapper.selectById(userId);
+        Integer dataScope = getUserDataScope(userId);
+        List<String> perms = sysMenuMapper.selectPermsByUserId(userId);
+        String permsStr = String.join(",", perms);
+        // 协议：user:{userId}:{dataScope}:{deptId}:{perm1,perm2,...}
+        stringRedisTemplate.convertAndSend(
+                AuthCacheConstant.PERMISSION_CHANGE_CHANNEL,
+                "user:" + userId + ":"
+                        + (dataScope == null ? "null" : dataScope) + ":"
+                        + (user == null || user.getDeptId() == null ? "null" : user.getDeptId()) + ":"
+                        + permsStr
+        );
     }
 
     /**

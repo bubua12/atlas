@@ -2,7 +2,7 @@ package com.bubua12.atlas.monitor.controller;
 
 import com.bubua12.atlas.common.core.result.CommonResult;
 import com.bubua12.atlas.monitor.service.OnlineUserService;
-import com.bubua12.atlas.monitor.vo.OnlineUserVO;
+import com.bubua12.atlas.monitor.entity.vo.OnlineUserVO;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 

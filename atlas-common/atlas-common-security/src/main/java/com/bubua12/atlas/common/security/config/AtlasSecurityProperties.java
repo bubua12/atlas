@@ -34,10 +34,6 @@ public class AtlasSecurityProperties {
          */
         private long allowedSkewSeconds = 300;
 
-        /**
-         * nonce 在 Redis 中的存活时间，通常与允许的重放窗口保持一致。
-         */
-        private long nonceTtlSeconds = 300;
     }
 
     @Data
@@ -54,8 +50,6 @@ public class AtlasSecurityProperties {
         private String currentSecret;
 
         private long allowedSkewSeconds = 300;
-
-        private long nonceTtlSeconds = 300;
 
         /**
          * 受信任的内部服务密钥映射，key 为服务名，value 为对应签名密钥。
